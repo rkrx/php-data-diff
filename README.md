@@ -1,6 +1,12 @@
 # data-diff
 A handy tool for comparing structured data quickly in a key-value manner
 
+## composer
+
+`composer require rkr/data-diff`
+
+## Example
+
 ```PHP
 <?php
 use DataDiff\DiffStorage;
