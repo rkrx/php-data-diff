@@ -1,5 +1,6 @@
 {
 	"name": "rkr/data-diff",
+	"license": "MIT",
 	"description": "A handy tool for comparing structured data quickly in a key-value manner",
 	"autoload": {
 		"psr-4": {
