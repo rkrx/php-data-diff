@@ -156,8 +156,8 @@ class DiffStorageStore {
 		return $this->query('
 			SELECT
 				s1.s_key AS k,
-				s1.s_data AS d,
-				s2.s_data AS f
+				s2.s_data AS d,
+				s1.s_data AS f
 			FROM
 				data_store AS s1
 			LEFT JOIN
@@ -175,7 +175,7 @@ class DiffStorageStore {
 	 * @return $this
 	 */
 	public function clearAll() {
-		$stmt = $this->pdo->query('DELETE FROM data_store WHERE s_ab=:s;');
+		$stmt = $this->pdo->query('DELETE FROM data_store WHERE s_ab=:s');
 		$stmt->execute(['s' => $this->storeA]);
 		$stmt->closeCursor();
 	}
