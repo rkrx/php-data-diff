@@ -78,13 +78,14 @@ class DiffStorageStore {
 	 * Get all rows, that are present in this store, but not in the other
 	 *
 	 * @return array[]
-	 * @return Generator
+	 * @return Generator|DiffStorageStoreRow[]
 	 */
 	public function getNew() {
 		return $this->query('
 			SELECT
-				s1.s_key,
-				s1.s_data
+				s1.s_key AS k,
+				s1.s_data AS d,
+				s2.s_data AS f
 			FROM
 				data_store AS s1
 			LEFT JOIN
@@ -102,13 +103,14 @@ class DiffStorageStore {
 	 * Get all rows, that have a different value hash in the other store
 	 *
 	 * @return array[]
-	 * @return Generator
+	 * @return Generator|DiffStorageStoreRow[]
 	 */
 	public function getChanged() {
 		return $this->query('
 			SELECT
-				s1.s_key,
-				s1.s_data
+				s1.s_key AS k,
+				s1.s_data AS d,
+				s2.s_data AS f
 			FROM
 				data_store AS s1
 			INNER JOIN
@@ -123,13 +125,14 @@ class DiffStorageStore {
 	}
 
 	/**
-	 * @return Generator
+	 * @return Generator|DiffStorageStoreRow[]
 	 */
 	public function getNewOrChanged() {
 		return $this->query('
 			SELECT
-				s1.s_key,
-				s1.s_data
+				s1.s_key AS k,
+				s1.s_data AS d,
+				s2.s_data AS f
 			FROM
 				data_store AS s1
 			LEFT JOIN
@@ -147,13 +150,14 @@ class DiffStorageStore {
 	 * Get all rows, that are present in the other store, but not in this
 	 *
 	 * @return array[]
-	 * @return Generator
+	 * @return Generator|DiffStorageStoreRow[]
 	 */
 	public function getMissing() {
 		return $this->query('
 			SELECT
-				s1.s_key,
-				s1.s_data
+				s1.s_key AS k,
+				s1.s_data AS d,
+				s2.s_data AS f
 			FROM
 				data_store AS s1
 			LEFT JOIN
@@ -197,15 +201,16 @@ class DiffStorageStore {
 
 	/**
 	 * @param string $query
-	 * @return Generator
+	 * @return Generator|DiffStorageStoreRow[]
 	 */
 	private function query($query) {
 		$stmt = $this->pdo->query($query);
 		$stmt->execute(['sA' => $this->storeA, 'sB' => $this->storeB]);
 		while($row = $stmt->fetch(PDO::FETCH_NUM)) {
 			$k = json_decode($row[0], true);
-			$v = json_decode($row[1], true);
-			yield $k => $v;
+			$d = json_decode($row[1], true);
+			$f = json_decode($row[2], true);
+			yield $k => new DiffStorageStoreRow($d, $f);
 		}
 		$stmt->closeCursor();
 	}
