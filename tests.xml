@@ -1,0 +1,11 @@
+<phpunit bootstrap="vendor/autoload.php"
+		 backupGlobals="false"
+		 backupStaticAttributes="false"
+		 strict="true"
+		 verbose="true">
+	<testsuites>
+		<testsuite name="Tests">
+			<file>tests/AllTests.php</file>
+		</testsuite>
+	</testsuites>
+</phpunit>

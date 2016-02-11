@@ -1,7 +1,9 @@
 /*
 !/src
+!/tests
 !/.editorconfig
 !/.gitignore
 !/composer.json
 !/LICENSE
 !/README.md
+!/tests.xml

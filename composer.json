@@ -4,7 +4,15 @@
 	"description": "A handy tool for comparing structured data quickly in a key-value manner",
 	"autoload": {
 		"psr-4": {
-			"DataDiff\\": "src/"
+			"DataDiff\\": ["src/"]
 		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"DataDiff\\": ["src/", "tests/"]
+		}
+	},
+	"require-dev": {
+		"phpunit/phpunit": "~3.7@stable"
 	}
 }
