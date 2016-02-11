@@ -6,7 +6,7 @@ use Generator;
 use PDO;
 use PDOStatement;
 
-class Store {
+class DiffStorageStore {
 	/** @var PDO */
 	private $pdo;
 	/** @var PDOStatement */
@@ -27,25 +27,30 @@ class Store {
 	private $dataSchema;
 	/** @var int */
 	private $counter = 0;
+	/** @var callable */
+	private $duplicateKeyHandler;
 
 	/**
 	 * @param PDO $pdo
 	 * @param array $schema
 	 * @param array $valueSchema
-	 * @param $missingColumnValue
+	 * @param mixed $missingColumnValue
+	 * @param callable $duplicateKeyHandler
 	 * @param string $storeA
 	 * @param string $storeB
 	 */
-	public function __construct(PDO $pdo, array $schema, array $valueSchema, $missingColumnValue, $storeA, $storeB) {
+	public function __construct(PDO $pdo, array $schema, array $valueSchema, $missingColumnValue, $duplicateKeyHandler, $storeA, $storeB) {
 		$this->pdo = $pdo;
 		$this->testStmt = $this->pdo->prepare('SELECT COUNT(*) FROM data_store WHERE s_ab=:s AND s_key=:k');
+		$this->selectStmt = $this->pdo->prepare('SELECT s_data FROM data_store WHERE s_ab=:s AND s_key=:k');
 		$this->insertStmt = $this->pdo->prepare('INSERT INTO data_store (s_ab, s_key, s_data_hash, s_data, s_sort) VALUES (:s, :kH, :vH, :v, :srt)');
-		$this->updateStmt = $this->pdo->prepare('UPDATE data_store SET s_data_hash=:vH, s_data=:v WHERE s_ab=:s AND s_key=:k');
+		$this->updateStmt = $this->pdo->prepare('UPDATE data_store SET s_data_hash=:vH, s_data=:v WHERE s_ab=:s AND s_key=:kH');
 		$this->storeA = $storeA;
 		$this->storeB = $storeB;
 		$this->keySchema = $schema;
 		$this->dataSchema = $valueSchema;
 		$this->missingColumnValue = $missingColumnValue;
+		$this->duplicateKeyHandler = $duplicateKeyHandler;
 	}
 
 	/**
@@ -55,14 +60,17 @@ class Store {
 	public function addRow(array $data) {
 		$keyHash = $this->convertData($data, $this->keySchema);
 		$dataHash = $this->convertData($data, $this->dataSchema);
-		$data = json_encode($data, JSON_UNESCAPED_SLASHES);
 		$this->testStmt->execute(['s' => $this->storeA, 'k' => $keyHash]);
 		$count = $this->testStmt->fetch(PDO::FETCH_COLUMN, 0);
 		if($count < 1) {
 			$this->counter++;
-			$this->insertStmt->execute(['s' => $this->storeA, 'kH' => $keyHash, 'vH' => $dataHash, 'v' => $data, 'srt' => $this->counter]);
+			$this->insertStmt->execute(['s' => $this->storeA, 'kH' => $keyHash, 'vH' => $dataHash, 'v' => json_encode($data, JSON_UNESCAPED_SLASHES), 'srt' => $this->counter]);
 		} else {
-			$this->updateStmt->execute(['s' => $this->storeA, 'kH' => $keyHash, 'vH' => $dataHash, 'v' => $data]);
+			$this->selectStmt->execute(['s' => $this->storeA, 'k' => $keyHash]);
+			$oldData = $this->selectStmt->fetch(PDO::FETCH_COLUMN, 0);
+			$oldData = json_decode($oldData, true);
+			$data = call_user_func($this->duplicateKeyHandler, $data, $oldData);
+			$this->updateStmt->execute(['s' => $this->storeA, 'kH' => $keyHash, 'vH' => $dataHash, 'v' => json_encode($data, JSON_UNESCAPED_SLASHES)]);
 		}
 	}
 
