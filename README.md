@@ -55,23 +55,23 @@ foreach($res as $key => $value) {
 
 Output:
 ```
-    Added  : 501
-    Changed: 50
-    Removed: 1
-    
-    Array
-    (
-        [total] => Array
-            (
-                [local] => 60
-                [foreign] => 59.98999
-            )
-    
-        [test] => Array
-            (
-                [local] => 0
-                [foreign] => 2
-            )
-    
-    )
+Added  : 501
+Changed: 50
+Removed: 1
+
+Array
+(
+    [total] => Array
+        (
+            [local] => 60
+            [foreign] => 59.98999
+        )
+
+    [test] => Array
+        (
+            [local] => 0
+            [foreign] => 2
+        )
+
+)
 ```
