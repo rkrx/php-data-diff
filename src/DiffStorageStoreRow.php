@@ -70,6 +70,24 @@ class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess {
 	}
 
 	/**
+	 * @param array $fields
+	 * @param mixed $format
+	 * @return array
+	 * @throws Exception
+	 */
+	public function getDiffFormatted(array $fields = null, $format = null) {
+		$diff = $this->getDiff($fields);
+		if($format === null) {
+			$result = [];
+			foreach($diff as $fieldName => $values) {
+				$result[] = sprintf("%s: %s => %s", $fieldName, $values['foreign'], $values['local']);
+			}
+			return join(', ', $result);
+		}
+		throw new Exception("Unknown format: {$format}");
+	}
+
+	/**
 	 * @return mixed
 	 */
 	function jsonSerialize() {
