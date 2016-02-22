@@ -80,7 +80,7 @@ class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess {
 		if($format === null) {
 			$result = [];
 			foreach($diff as $fieldName => $values) {
-				$result[] = sprintf("%s: %s => %s", $fieldName, $values['foreign'], $values['local']);
+				$result[] = sprintf("%s: %s -> %s", $fieldName, $values['foreign'], $values['local']);
 			}
 			return join(', ', $result);
 		}
