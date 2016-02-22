@@ -43,12 +43,16 @@ class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess {
 	}
 
 	/**
+	 * @param array $fields
 	 * @return array
 	 */
-	public function getDiff() {
+	public function getDiff(array $fields = null) {
 		$diff = [];
-		$diffFn = function ($keysA) use (&$diff) {
+		$diffFn = function ($keysA) use (&$diff, $fields) {
 			foreach($keysA as $key) {
+				if($fields !== null && !in_array($key, $fields)) {
+					continue;
+				}
 				if(!array_key_exists($key, $this->foreignRow)) {
 					$diff[$key] = ['local' => $this->row[$key], 'foreign' => null];
 				} elseif(!array_key_exists($key, $this->row)) {

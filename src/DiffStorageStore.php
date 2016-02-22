@@ -77,7 +77,6 @@ class DiffStorageStore {
 	/**
 	 * Get all rows, that are present in this store, but not in the other
 	 *
-	 * @return array[]
 	 * @return Generator|DiffStorageStoreRow[]
 	 */
 	public function getNew() {
@@ -102,7 +101,6 @@ class DiffStorageStore {
 	/**
 	 * Get all rows, that have a different value hash in the other store
 	 *
-	 * @return array[]
 	 * @return Generator|DiffStorageStoreRow[]
 	 */
 	public function getChanged() {
@@ -149,7 +147,6 @@ class DiffStorageStore {
 	/**
 	 * Get all rows, that are present in the other store, but not in this
 	 *
-	 * @return array[]
 	 * @return Generator|DiffStorageStoreRow[]
 	 */
 	public function getMissing() {
