@@ -13,26 +13,35 @@ use DataDiff\DiffStorage;
 
 require 'vendor/autoload.php';
 
-$ds = new DiffStorage();
-$ds->storeA(['a' => 123]);
-$ds->storeA(['b' => 123], 123);
-$ds->storeA(['c' => 123], 123.3300);
-$ds->storeA(['e1' => 123, 'e2' => 456]);
+$this->ds = new DiffStorage([
+    'client_id' => 'integer',
+], [
+    'client_id' => 'integer',
+    'description' => 'string',
+    'total' => 'money',
+]);
 
-$ds->storeB(['b' => 123], 456);
-$ds->storeB(['c' => 123], 123.33);
-$ds->storeB(['d' => 123]);
-$ds->storeB(['e2' => 456, 'e1' => 123]);
-
-foreach($ds->getNewA() as $key => $value) {
-	printf("New: %s => %s\n", json_encode($key), json_encode($value));
+for($i=2; $i <= 501; $i++) {
+    $row = ['client_id' => $i, 'description' => 'Dies ist ein Test', 'total' => $i === 50 ? 60 : 59.98999, 'test' => $i % 2];
+    $this->ds->storeA()->addRow($row);
+}
+for($i=1; $i <= 500; $i++) {
+    $row = ['client_id' => $i, 'description' => 'Dies ist ein Test', 'total' => 59.98999, 'test' => $i % 3];
+    $this->ds->storeB()->addRow($row);
 }
 
-foreach($ds->getChangedA() as $key => $value) {
-	printf("Changed: %s => %s\n", json_encode($key), json_encode($value));
+$res = $this->ds->storeA()->getNew();
+foreach($res as $key => $value) {
+    $this->assertEquals(501, $value['client_id']);
+}
+		
+$res = $this->ds->storeA()->getChanged();
+foreach($res as $key => $value) {
+    $this->assertEquals(50, $value['client_id']);
 }
 
-foreach($ds->getRemovedB() as $key => $value) {
-	printf("Removed: %s => %s\n", json_encode($key), json_encode($value));
+$res = $this->ds->storeA()->getMissing();
+foreach($res as $key => $value) {
+    $this->assertEquals(1, $value['client_id']);
 }
 ```
