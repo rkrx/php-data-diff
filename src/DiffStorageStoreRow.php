@@ -3,6 +3,7 @@ namespace DataDiff;
 
 use Exception;
 use Generator;
+use const null;
 use PDO;
 use PDOStatement;
 
@@ -13,12 +14,16 @@ class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess {
 	private $row;
 	/** @var array */
 	private $foreignRow;
+	/** @var array */
+	private $dataSchema;
 
 	/**
 	 * @param array $row
 	 * @param array $foreignRow
+	 * @param array $dataSchema
 	 */
-	public function __construct(array $row = null, array $foreignRow = null) {
+	public function __construct(array $row = null, array $foreignRow = null, array $dataSchema = null) {
+		$this->dataSchema = $dataSchema;
 		$this->row = is_array($row) ? $row : [];
 		$this->foreignRow = is_array($foreignRow) ? $foreignRow : [];
 		if($row !== null) {
@@ -57,8 +62,16 @@ class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess {
 					$diff[$key] = ['local' => $this->row[$key], 'foreign' => null];
 				} elseif(!array_key_exists($key, $this->row)) {
 					$diff[$key] = ['local' => null, 'foreign' => $this->foreignRow[$key]];
-				} elseif(json_encode($this->row[$key]) !== json_encode($this->foreignRow[$key])) {
-					$diff[$key] = ['local' => $this->row[$key], 'foreign' => $this->foreignRow[$key]];
+				} else {
+					$v1 = $this->row[$key];
+					$v2 = $this->foreignRow[$key];
+					if(array_key_exists($key, $this->dataSchema)) {
+						$v1 = call_user_func($this->dataSchema[$key], $v1);
+						$v2 = call_user_func($this->dataSchema[$key], $v2);
+					}
+					if(json_encode($v1) !== json_encode($v2)) {
+						$diff[$key] = ['local' => $this->row[$key], 'foreign' => $this->foreignRow[$key]];
+					}
 				}
 			}
 		};
