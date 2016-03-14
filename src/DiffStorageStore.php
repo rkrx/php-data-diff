@@ -5,14 +5,17 @@ use Exception;
 use Generator;
 use PDO;
 use PDOStatement;
+use Traversable;
 
-class DiffStorageStore {
+class DiffStorageStore implements \IteratorAggregate {
 	/** @var PDO */
 	private $pdo;
 	/** @var PDOStatement */
 	private $testStmt;
 	/** @var PDOStatement */
 	private $insertStmt;
+	/** @var PDOStatement */
+	private $selectStmt;
 	/** @var PDOStatement */
 	private $updateStmt;
 	/** @var string */
@@ -208,6 +211,31 @@ class DiffStorageStore {
 			$d = json_decode($row[1], true);
 			$f = json_decode($row[2], true);
 			yield $k => new DiffStorageStoreRow($d, $f, $this->dataSchema);
+		}
+		$stmt->closeCursor();
+	}
+
+	/**
+	 * @return Traversable|array[]
+	 */
+	public function getIterator() {
+		$query = '
+			SELECT
+				s1.s_key AS k,
+				s1.s_data AS d
+			FROM
+				data_store AS s1
+			WHERE
+				s1.s_ab = :s
+			ORDER BY
+				s1.s_sort
+		';
+		$stmt = $this->pdo->query($query);
+		$stmt->execute(['s' => $this->storeA]);
+		while($row = $stmt->fetch(PDO::FETCH_NUM)) {
+			$k = json_decode($row[0], true);
+			$v = json_decode($row[1], true);
+			yield $k => $v;
 		}
 		$stmt->closeCursor();
 	}
