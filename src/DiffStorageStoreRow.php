@@ -2,10 +2,6 @@
 namespace DataDiff;
 
 use Exception;
-use Generator;
-use const null;
-use PDO;
-use PDOStatement;
 
 class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess {
 	/** @var array */
