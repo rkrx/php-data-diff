@@ -12,15 +12,19 @@ class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess {
 	private $foreignRow;
 	/** @var array */
 	private $dataSchema;
+	/** @var mixed */
+	private $missingValue;
 
 	/**
 	 * @param array $row
 	 * @param array $foreignRow
 	 * @param array $dataSchema
+	 * @param mixed $missingValue
 	 */
-	public function __construct(array $row = null, array $foreignRow = null, array $dataSchema = null) {
+	public function __construct(array $row = null, array $foreignRow = null, array $dataSchema = null, $missingValue = null) {
 		$this->dataSchema = $dataSchema;
 		$this->row = is_array($row) ? $row : [];
+		$this->missingValue = $missingValue;
 		$this->foreignRow = is_array($foreignRow) ? $foreignRow : [];
 		if($row !== null) {
 			$this->data = $row;
@@ -33,14 +37,14 @@ class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess {
 	 * @return array
 	 */
 	public function getData() {
-		return $this->row;
+		return $this->formatRow($this->row);
 	}
 
 	/**
 	 * @return array
 	 */
 	public function getForeignData() {
-		return $this->foreignRow;
+		return $this->formatRow($this->foreignRow);
 	}
 
 	/**
@@ -100,7 +104,7 @@ class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess {
 	 * @return mixed
 	 */
 	function jsonSerialize() {
-		return $this->data;
+		return $this->formatRow($this->data);
 	}
 
 	/**
@@ -139,5 +143,16 @@ class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess {
 		if($this->offsetExists($offset)) {
 			unset($this->data[$offset]);
 		}
+	}
+
+	/**
+	 * @param array $row
+	 * @return array
+	 */
+	private function formatRow($row) {
+		$schema = $this->dataSchema;
+		$schema = array_map(function () { return null; }, $schema);
+		$row = array_merge($schema, $row);
+		return $row;
 	}
 }

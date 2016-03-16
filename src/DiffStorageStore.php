@@ -36,13 +36,13 @@ class DiffStorageStore implements \IteratorAggregate {
 	/**
 	 * @param PDO $pdo
 	 * @param array $schema
-	 * @param array $valueSchema
+	 * @param array $dataSchema
 	 * @param mixed $missingColumnValue
 	 * @param callable $duplicateKeyHandler
 	 * @param string $storeA
 	 * @param string $storeB
 	 */
-	public function __construct(PDO $pdo, array $schema, array $valueSchema, $missingColumnValue, $duplicateKeyHandler, $storeA, $storeB) {
+	public function __construct(PDO $pdo, array $schema, array $dataSchema, $missingColumnValue, $duplicateKeyHandler, $storeA, $storeB) {
 		$this->pdo = $pdo;
 		$this->testStmt = $this->pdo->prepare('SELECT COUNT(*) FROM data_store WHERE s_ab=:s AND s_key=:k');
 		$this->selectStmt = $this->pdo->prepare('SELECT s_data FROM data_store WHERE s_ab=:s AND s_key=:k');
@@ -51,7 +51,7 @@ class DiffStorageStore implements \IteratorAggregate {
 		$this->storeA = $storeA;
 		$this->storeB = $storeB;
 		$this->keySchema = $schema;
-		$this->dataSchema = $valueSchema;
+		$this->dataSchema = $dataSchema;
 		$this->missingColumnValue = $missingColumnValue;
 		$this->duplicateKeyHandler = $duplicateKeyHandler;
 	}
@@ -236,7 +236,7 @@ class DiffStorageStore implements \IteratorAggregate {
 			$k = json_decode($row[0], true);
 			$d = json_decode($row[1], true);
 			$f = json_decode($row[2], true);
-			yield $k => new DiffStorageStoreRow($d, $f, $this->dataSchema);
+			yield $k => new DiffStorageStoreRow($d, $f, $this->dataSchema, $this->missingColumnValue);
 		}
 		$stmt->closeCursor();
 	}
@@ -258,8 +258,9 @@ class DiffStorageStore implements \IteratorAggregate {
 		$stmt = $this->pdo->query($query);
 		$stmt->execute(['s' => $this->storeA]);
 		while($row = $stmt->fetch(PDO::FETCH_NUM)) {
-			$v = json_decode($row[0], true);
-			yield $v;
+			$row = json_decode($row[0], true);
+			$row = new DiffStorageStoreRow($row, [], $this->dataSchema, $this->missingColumnValue);
+			yield $row->getData();
 		}
 		$stmt->closeCursor();
 	}
