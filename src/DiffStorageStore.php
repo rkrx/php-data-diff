@@ -58,9 +58,9 @@ class DiffStorageStore implements \IteratorAggregate {
 
 	/**
 	 * @param array $data
-	 * @throws Exception
+	 * @param callable $duplicateKeyHandler
 	 */
-	public function addRow(array $data) {
+	public function addRow(array $data, $duplicateKeyHandler = null) {
 		$keyHash = $this->convertData($data, $this->keySchema);
 		$dataHash = $this->convertData($data, $this->dataSchema);
 		$this->testStmt->execute(['s' => $this->storeA, 'k' => $keyHash]);
@@ -72,7 +72,11 @@ class DiffStorageStore implements \IteratorAggregate {
 			$this->selectStmt->execute(['s' => $this->storeA, 'k' => $keyHash]);
 			$oldData = $this->selectStmt->fetch(PDO::FETCH_COLUMN, 0);
 			$oldData = json_decode($oldData, true);
-			$data = call_user_func($this->duplicateKeyHandler, $data, $oldData);
+			if($duplicateKeyHandler !== null) {
+				$data = call_user_func($duplicateKeyHandler, $data, $oldData);
+			} else {
+				$data = call_user_func($this->duplicateKeyHandler, $data, $oldData);
+			}
 			$this->updateStmt->execute(['s' => $this->storeA, 'kH' => $keyHash, 'vH' => $dataHash, 'v' => json_encode($data, JSON_UNESCAPED_SLASHES)]);
 		}
 	}
