@@ -82,6 +82,28 @@ class DiffStorageStore implements \IteratorAggregate {
 	}
 
 	/**
+	 * @param array $data
+	 * @param callable $duplicateKeyHandler
+	 */
+	public function updateRow(array $data, $duplicateKeyHandler = null) {
+		$keyHash = $this->convertData($data, $this->keySchema);
+		$dataHash = $this->convertData($data, $this->dataSchema);
+		$this->testStmt->execute(['s' => $this->storeA, 'k' => $keyHash]);
+		$count = $this->testStmt->fetch(PDO::FETCH_COLUMN, 0);
+		if($count > 0) {
+			$this->selectStmt->execute(['s' => $this->storeA, 'k' => $keyHash]);
+			$oldData = $this->selectStmt->fetch(PDO::FETCH_COLUMN, 0);
+			$oldData = json_decode($oldData, true);
+			if($duplicateKeyHandler !== null) {
+				$data = call_user_func($duplicateKeyHandler, $data, $oldData);
+			} else {
+				$data = call_user_func($this->duplicateKeyHandler, $data, $oldData);
+			}
+			$this->updateStmt->execute(['s' => $this->storeA, 'kH' => $keyHash, 'vH' => $dataHash, 'v' => json_encode($data, JSON_UNESCAPED_SLASHES)]);
+		}
+	}
+
+	/**
 	 * Get all rows, that are present in this store, but not in the other
 	 *
 	 * @return Generator|DiffStorageStoreRow[]
@@ -225,7 +247,6 @@ class DiffStorageStore implements \IteratorAggregate {
 	public function getIterator() {
 		$query = '
 			SELECT
-				s1.s_key AS k,
 				s1.s_data AS d
 			FROM
 				data_store AS s1
@@ -237,9 +258,8 @@ class DiffStorageStore implements \IteratorAggregate {
 		$stmt = $this->pdo->query($query);
 		$stmt->execute(['s' => $this->storeA]);
 		while($row = $stmt->fetch(PDO::FETCH_NUM)) {
-			$k = json_decode($row[0], true);
-			$v = json_decode($row[1], true);
-			yield $k => $v;
+			$v = json_decode($row[0], true);
+			yield $v;
 		}
 		$stmt->closeCursor();
 	}
