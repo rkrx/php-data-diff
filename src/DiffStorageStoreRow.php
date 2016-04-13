@@ -10,8 +10,6 @@ class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess {
 	private $row;
 	/** @var array */
 	private $foreignRow;
-	/** @var mixed */
-	private $missingValue;
 	/** @var array */
 	private $converter;
 
@@ -19,12 +17,10 @@ class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess {
 	 * @param array $row
 	 * @param array $foreignRow
 	 * @param array $converter
-	 * @param mixed $missingValue
 	 */
-	public function __construct(array $row = null, array $foreignRow = null, array $converter, $missingValue = null) {
+	public function __construct(array $row = null, array $foreignRow = null, array $converter) {
 		$this->row = is_array($row) ? $row : [];
 		$this->converter = $converter;
-		$this->missingValue = $missingValue;
 		$this->foreignRow = is_array($foreignRow) ? $foreignRow : [];
 		if($row !== null) {
 			$this->data = $row;

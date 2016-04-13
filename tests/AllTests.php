@@ -80,5 +80,28 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 		}
 		$this->assertTrue(false);
 	}
+
+	/**
+	 */
+	public function testDuplicateKeyHandlerBehavior() {
+		$ds = new DiffStorage([
+			'key' => 'INT',
+		], [
+			'value' => 'INT',
+		], function (array $newData, array $oldData) {
+			$newData['value'] = $newData['value'] + $oldData['value'];
+			return $newData;
+		});
+
+		$ds->storeA()->addRow(['key' => 10, 'value' => 20]);
+		$ds->storeA()->addRow(['key' => 10, 'value' => 30]);
+
+		foreach($ds->storeA() as $key => $value) {
+			$this->assertEquals(10, $value['key']);
+			$this->assertEquals(50, $value['value']);
+			return;
+		}
+		$this->assertTrue(false);
+	}
 }
 

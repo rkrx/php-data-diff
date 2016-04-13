@@ -7,8 +7,6 @@ use PDO;
 class DiffStorage {
 	/** @var PDO */
 	private $pdo = null;
-	/** @var null */
-	private $missingColumnValue;
 	/** @var DiffStorageStore */
 	private $storeA = null;
 	/** @var DiffStorageStore */
@@ -27,11 +25,10 @@ class DiffStorage {
 	 *
 	 * @param array $keySchema
 	 * @param array $valueSchema
-	 * @param mixed $missingColumnValue
 	 * @param callable|null $duplicateKeyHandler
 	 * @throws Exception
 	 */
-	public function __construct(array $keySchema, array $valueSchema, $missingColumnValue = null, $duplicateKeyHandler = null) {
+	public function __construct(array $keySchema, array $valueSchema, $duplicateKeyHandler = null) {
 		$this->pdo = new PDO('sqlite::memory:', null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 		$this->pdo->exec("PRAGMA synchronous=OFF");
 		$this->pdo->exec("PRAGMA count_changes=OFF");
@@ -42,8 +39,6 @@ class DiffStorage {
 		$this->pdo->exec('CREATE INDEX data_store_ab_index ON data_store (s_ab, s_key)');
 		$this->pdo->exec('CREATE INDEX data_store_key_index ON data_store (s_key)');
 
-		$this->missingColumnValue = $missingColumnValue;
-
 		$sqlKeySchema = $this->buildSchema($keySchema);
 		$sqlValueSchema = $this->buildSchema($valueSchema);
 
@@ -52,11 +47,13 @@ class DiffStorage {
 		$converter = array_merge($keyConverter, $valueConverter);
 
 		if($duplicateKeyHandler === null) {
-			$duplicateKeyHandler = function ($newData = null, $oldData = null) { return array_merge($oldData, $newData); };
+			$duplicateKeyHandler = function (array $newData = null, array $oldData = null) {
+				return array_merge($oldData, $newData);
+			};
 		}
 
-		$this->storeA = new DiffStorageStore($this->pdo, $sqlKeySchema, $sqlValueSchema, $converter, $missingColumnValue, $duplicateKeyHandler, 'a', 'b');
-		$this->storeB = new DiffStorageStore($this->pdo, $sqlKeySchema, $sqlValueSchema, $converter, $missingColumnValue, $duplicateKeyHandler, 'b', 'a');
+		$this->storeA = new DiffStorageStore($this->pdo, $sqlKeySchema, $sqlValueSchema, $converter, 'a', 'b', $duplicateKeyHandler);
+		$this->storeB = new DiffStorageStore($this->pdo, $sqlKeySchema, $sqlValueSchema, $converter, 'b', 'a', $duplicateKeyHandler);
 	}
 
 	/**

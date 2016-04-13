@@ -11,8 +11,6 @@ class DiffStorageStore implements \IteratorAggregate {
 	/** @var PDO */
 	private $pdo;
 	/** @var PDOStatement */
-	private $testStmt;
-	/** @var PDOStatement */
 	private $insertStmt;
 	/** @var PDOStatement */
 	private $selectStmt;
@@ -22,8 +20,6 @@ class DiffStorageStore implements \IteratorAggregate {
 	private $storeA;
 	/** @var string */
 	private $storeB;
-	/** @var mixed */
-	private $missingColumnValue;
 	/** @var array */
 	private $keySchema;
 	/** @var array */
@@ -40,15 +36,13 @@ class DiffStorageStore implements \IteratorAggregate {
 	 * @param string $keySchema
 	 * @param string $valueSchema
 	 * @param array $converter
-	 * @param mixed $missingColumnValue
 	 * @param callable $duplicateKeyHandler
 	 * @param string $storeA
 	 * @param string $storeB
 	 */
-	public function __construct(PDO $pdo, $keySchema, $valueSchema, array $converter, $missingColumnValue, $duplicateKeyHandler, $storeA, $storeB) {
+	public function __construct(PDO $pdo, $keySchema, $valueSchema, array $converter, $storeA, $storeB, $duplicateKeyHandler) {
 		$this->pdo = $pdo;
-		$this->testStmt = $this->pdo->prepare('SELECT COUNT(*) FROM data_store WHERE s_ab=:s AND s_key=:k');
-		$this->selectStmt = $this->pdo->prepare('SELECT s_data FROM data_store WHERE s_ab=:s AND s_key=:k');
+		$this->selectStmt = $this->pdo->prepare("SELECT s_data FROM data_store WHERE s_ab='{$storeA}' AND s_key={$keySchema} AND (1=1 OR s_value={$valueSchema})");
 		$this->insertStmt = $this->pdo->prepare("INSERT INTO data_store (s_ab, s_key, s_value, s_data, s_sort) VALUES ('{$storeA}', {$keySchema}, {$valueSchema}, :___data, :___sort)");
 		$this->updateStmt = $this->pdo->prepare("UPDATE data_store SET s_value={$valueSchema}, s_data=:___data WHERE s_ab='{$storeA}' AND s_key={$keySchema}");
 		$this->storeA = $storeA;
@@ -56,7 +50,6 @@ class DiffStorageStore implements \IteratorAggregate {
 		$this->keySchema = $keySchema;
 		$this->dataSchema = $valueSchema;
 		$this->converter = $converter;
-		$this->missingColumnValue = $missingColumnValue;
 		$this->duplicateKeyHandler = $duplicateKeyHandler;
 	}
 
@@ -65,14 +58,33 @@ class DiffStorageStore implements \IteratorAggregate {
 	 * @param callable $duplicateKeyHandler
 	 */
 	public function addRow(array $data, $duplicateKeyHandler = null) {
-		$metaData = $data;
-		$metaData = array_diff_key($metaData, array_diff_key($metaData, $this->converter));
-		$metaData['___data'] = json_encode($data);
-		$metaData['___sort'] = $this->counter;
+		if($duplicateKeyHandler === null) {
+			$duplicateKeyHandler = $this->duplicateKeyHandler;
+		}
+		$buildMetaData = function (array $data, array $keys) {
+			$metaData = $data;
+			$metaData = array_diff_key($metaData, array_diff_key($metaData, $keys));
+			$metaData['___data'] = json_encode($data);
+			$metaData['___sort'] = $this->counter;
+			return $metaData;
+		};
 		try {
+			$metaData = $buildMetaData($data, $this->converter);
 			$this->insertStmt->execute($metaData);
 		} catch (\PDOException $e) {
 			if(strpos($e->getMessage(), 'UNIQUE constraint failed') !== false) {
+				$metaData = $buildMetaData($data, $this->converter);
+				unset($metaData['___data']);
+				unset($metaData['___sort']);
+				$this->selectStmt->execute($metaData);
+				$oldData = $this->selectStmt->fetch(PDO::FETCH_COLUMN, 0);
+				if($oldData === null) {
+					$oldData = [];
+				} else {
+					$oldData = json_decode($oldData, true);
+				}
+				$data = $duplicateKeyHandler($data, $oldData);
+				$metaData = $buildMetaData($data, $this->converter);
 				unset($metaData['___sort']);
 				$this->updateStmt->execute($metaData);
 			} else {
@@ -195,7 +207,7 @@ class DiffStorageStore implements \IteratorAggregate {
 			$k = json_decode($row[0], true);
 			$d = json_decode($row[1], true);
 			$f = json_decode($row[2], true);
-			yield $k => new DiffStorageStoreRow($d, $f, $this->converter, $this->missingColumnValue);
+			yield $k => new DiffStorageStoreRow($d, $f, $this->converter);
 		}
 		$stmt->closeCursor();
 	}
@@ -218,7 +230,7 @@ class DiffStorageStore implements \IteratorAggregate {
 		$stmt->execute(['s' => $this->storeA]);
 		while($row = $stmt->fetch(PDO::FETCH_NUM)) {
 			$row = json_decode($row[0], true);
-			$row = new DiffStorageStoreRow($row, [], $this->converter, $this->missingColumnValue);
+			$row = new DiffStorageStoreRow($row, [], $this->converter);
 			yield $row->getData();
 		}
 		$stmt->closeCursor();
