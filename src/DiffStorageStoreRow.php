@@ -10,20 +10,20 @@ class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess {
 	private $row;
 	/** @var array */
 	private $foreignRow;
-	/** @var array */
-	private $dataSchema;
 	/** @var mixed */
 	private $missingValue;
+	/** @var array */
+	private $converter;
 
 	/**
 	 * @param array $row
 	 * @param array $foreignRow
-	 * @param array $dataSchema
+	 * @param array $converter
 	 * @param mixed $missingValue
 	 */
-	public function __construct(array $row = null, array $foreignRow = null, array $dataSchema = null, $missingValue = null) {
-		$this->dataSchema = $dataSchema;
+	public function __construct(array $row = null, array $foreignRow = null, array $converter, $missingValue = null) {
 		$this->row = is_array($row) ? $row : [];
+		$this->converter = $converter;
 		$this->missingValue = $missingValue;
 		$this->foreignRow = is_array($foreignRow) ? $foreignRow : [];
 		if($row !== null) {
@@ -37,14 +37,14 @@ class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess {
 	 * @return array
 	 */
 	public function getData() {
-		return $this->formatRow($this->row);
+		return $this->row;
 	}
 
 	/**
 	 * @return array
 	 */
 	public function getForeignData() {
-		return $this->formatRow($this->foreignRow);
+		return $this->foreignRow;
 	}
 
 	/**
@@ -65,9 +65,9 @@ class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess {
 				} else {
 					$v1 = $this->row[$key];
 					$v2 = $this->foreignRow[$key];
-					if(array_key_exists($key, $this->dataSchema)) {
-						$v1 = call_user_func($this->dataSchema[$key], $v1);
-						$v2 = call_user_func($this->dataSchema[$key], $v2);
+					if(array_key_exists($key, $this->converter)) {
+						$v1 = call_user_func($this->converter[$key], $v1);
+						$v2 = call_user_func($this->converter[$key], $v2);
 					}
 					if(json_encode($v1) !== json_encode($v2)) {
 						$diff[$key] = ['local' => $this->row[$key], 'foreign' => $this->foreignRow[$key]];
@@ -150,7 +150,7 @@ class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess {
 	 * @return array
 	 */
 	private function formatRow($row) {
-		$schema = $this->dataSchema;
+		$schema = $this->converter;
 		$schema = array_map(function () { return null; }, $schema);
 		$row = array_merge($schema, $row);
 		return $row;
