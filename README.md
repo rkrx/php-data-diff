@@ -14,11 +14,11 @@ use DataDiff\DiffStorage;
 require 'vendor/autoload.php';
 
 $ds = new DiffStorage([
-	'client_id' => 'integer',
+	'client_id' => 'INT',
 ], [
-	'client_id' => 'integer',
-	'description' => 'string',
-	'total' => 'money',
+	'client_id' => 'INT',
+	'description' => 'STRING',
+	'total' => 'MONEY',
 ]);
 
 for($i=2; $i <= 501; $i++) {
