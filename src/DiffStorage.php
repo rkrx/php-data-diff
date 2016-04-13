@@ -99,7 +99,7 @@ class DiffStorage {
 					$def[] = 'printf("%0.2f", :'.$name.')';
 					break;
 				case 'STRING':
-					$def[] = '\'"\'||HEX(:'.$name.')||\'"\'';
+					$def[] = '\'"\'||HEX(TRIM(:'.$name.'))||\'"\'';
 					break;
 			}
 		}
