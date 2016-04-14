@@ -94,6 +94,15 @@ class DiffStorageStore implements \IteratorAggregate {
 	}
 
 	/**
+	 * @param Traversable $rows
+	 */
+	public function addRows($rows) {
+		foreach($rows as $row) {
+			$this->addRow($row);
+		}
+	}
+
+	/**
 	 * Get all rows, that are present in this store, but not in the other
 	 *
 	 * @return Generator|DiffStorageStoreRow[]
