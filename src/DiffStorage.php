@@ -30,6 +30,7 @@ class DiffStorage {
 	 */
 	public function __construct(array $keySchema, array $valueSchema, $duplicateKeyHandler = null) {
 		$this->pdo = new PDO('sqlite::memory:', null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+		$this->compatibility();
 		$this->pdo->exec("PRAGMA synchronous=OFF");
 		$this->pdo->exec("PRAGMA count_changes=OFF");
 		$this->pdo->exec("PRAGMA journal_mode=MEMORY");
@@ -101,6 +102,9 @@ class DiffStorage {
 				case 'STRING':
 					$def[] = '\'"\'||HEX(TRIM(:'.$name.'))||\'"\'';
 					break;
+				case 'MD5':
+					$def[] = '\'"\'||MD5(:'.$name.')||\'"\'';
+					break;
 			}
 		}
 		return join('||"|"||', $def);
@@ -130,8 +134,51 @@ class DiffStorage {
 				case 'STRING':
 					$def[$name] = function ($value) { return (string) $value; };
 					break;
+				case 'MD5':
+					$def[$name] = function ($value) { return md5((string) $value); };
+					break;
 			}
 		}
 		return $def;
+	}
+
+	/**
+	 */
+	private function compatibility() {
+		if(!$this->testStatement('SELECT printf("%0.2f", 19.99999) AS res')) {
+			$this->registerUDFunction('printf', function ($fmt, $arg) {
+				return sprintf($fmt, $arg);
+			});
+		}
+
+		if($this->testStatement('SELECT md5("aaa") AS res')) {
+			$this->registerUDFunction('md5', function ($arg) {
+				return md5($arg);
+			});
+		}
+	}
+
+	/**
+	 * @param string $query
+	 * @return bool
+	 */
+	private function testStatement($query) {
+		try {
+			return $this->pdo->query($query) !== false;
+		} catch (\PDOException $e) {
+			return false;
+		}
+	}
+
+	/**
+	 * @param string $name
+	 * @param mixed $callback
+	 * @throws Exception
+	 */
+	private function registerUDFunction($name, $callback) {
+		if(!method_exists($this->pdo, 'sqliteCreateFunction')) {
+			throw new Exception('It is not possible to create user defined functions for rkr/data-diff\'s sqlite instance');
+		}
+		call_user_func([$this->pdo, 'sqliteCreateFunction'], $name, $callback);
 	}
 }
