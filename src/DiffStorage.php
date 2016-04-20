@@ -103,7 +103,7 @@ class DiffStorage {
 					$def[] = '\'"\'||HEX(TRIM(:'.$name.'))||\'"\'';
 					break;
 				case 'MD5':
-					$def[] = '\'"\'||MD5(:'.$name.')||\'"\'';
+					$def[] = '\'"\'||md5(:'.$name.')||\'"\'';
 					break;
 			}
 		}
