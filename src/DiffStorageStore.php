@@ -1,7 +1,6 @@
 <?php
 namespace DataDiff;
 
-use Exception;
 use Generator;
 use PDO;
 use PDOStatement;

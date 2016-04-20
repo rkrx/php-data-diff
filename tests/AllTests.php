@@ -103,5 +103,24 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 		}
 		$this->assertTrue(false);
 	}
+
+	/**
+	 */
+	public function testMD5() {
+		$ds = new DiffStorage([
+			'key' => 'INT',
+		], [
+			'value' => 'MD5',
+		]);
+
+		$ds->storeA()->addRow(['key' => 10, 'value' => 'Hello World']);
+
+		foreach($ds->storeA() as $key => $value) {
+			$this->assertEquals(10, $value['key']);
+			$this->assertEquals('Hello World', $value['value']);
+			return;
+		}
+		$this->assertTrue(false);
+	}
 }
 

@@ -30,11 +30,11 @@ class DiffStorage {
 	 */
 	public function __construct(array $keySchema, array $valueSchema, $duplicateKeyHandler = null) {
 		$this->pdo = new PDO('sqlite::memory:', null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-		$this->compatibility();
 		$this->pdo->exec("PRAGMA synchronous=OFF");
 		$this->pdo->exec("PRAGMA count_changes=OFF");
 		$this->pdo->exec("PRAGMA journal_mode=MEMORY");
 		$this->pdo->exec("PRAGMA temp_store=MEMORY");
+		$this->compatibility();
 
 		$this->pdo->exec('CREATE TABLE data_store (s_ab TEXT, s_key TEXT, s_value TEXT, s_data TEXT, s_sort INT, PRIMARY KEY(s_ab, s_key))');
 		$this->pdo->exec('CREATE INDEX data_store_ab_index ON data_store (s_ab, s_key)');
@@ -151,7 +151,7 @@ class DiffStorage {
 			});
 		}
 
-		if($this->testStatement('SELECT md5("aaa") AS res')) {
+		if(!$this->testStatement('SELECT md5("aaa") AS md5res')) {
 			$this->registerUDFunction('md5', function ($arg) {
 				return md5($arg);
 			});
@@ -164,7 +164,7 @@ class DiffStorage {
 	 */
 	private function testStatement($query) {
 		try {
-			return $this->pdo->query($query) !== false;
+			return $this->pdo->query($query)->execute() !== false;
 		} catch (\PDOException $e) {
 			return false;
 		}
