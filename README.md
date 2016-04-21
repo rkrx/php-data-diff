@@ -97,13 +97,13 @@ You have all information to match all differences between the two lists.
 
 We have a special case here. The pencil has a price of `2.9499` in the first list. But since we only want to compare the price with a decimal precision of two, the prices are actually identical, because the computed price of `D0001` is in both cases `2.95`. This is where the `Schema` is this component comes in place.
 
-When you define a `DiffStorage` you specify two schemas. One for the key-part and one for the value-part:
+When you define a `MemoryDiffStorage` you specify two schemas. One for the key-part and one for the value-part:
 
 ```PHP
 <?php
-use DataDiff\DiffStorage;
+use DataDiff\MemoryDiffStorage;
 
-$ds = new DiffStorage([
+$ds = new MemoryDiffStorage([
 	'reference' => 'STRING',
 ], [
 	'name' => 'STRING',
@@ -112,17 +112,17 @@ $ds = new DiffStorage([
 ]);
 ```
 
-A `DiffStorage` consists of two storages: `StoreA` and `StoreB`. You can insert as many rows with as many columns into each store as you want as long as the rows contain at least the columns defined in the schema. _The columns also need to have appropriate names since these names are not translated anyhow. This means, if your columns have different names in the database and the other source, you have to normalize those keys, before you put the data into each `Store`._
+A `MemoryDiffStorage` consists of two storages: `StoreA` and `StoreB`. You can insert as many rows with as many columns into each store as you want as long as the rows contain at least the columns defined in the schema. _The columns also need to have appropriate names since these names are not translated anyhow. This means, if your columns have different names in the database and the other source, you have to normalize those keys, before you put the data into each `Store`._
 
 Here is a example:
 
 ```PHP
 <?php
-use DataDiff\DiffStorage;
+use DataDiff\MemoryDiffStorage;
 
 require 'vendor/autoload.php';
 
-$ds = new DiffStorage([
+$ds = new MemoryDiffStorage([
 	'reference' => 'STRING',
 ], [
 	'name' => 'STRING',
@@ -181,11 +181,11 @@ As you may notice, `D0001` is not present in the result-set. This is because the
 
 ```PHP
 <?php
-use DataDiff\DiffStorage;
+use DataDiff\MemoryDiffStorage;
 
 require 'vendor/autoload.php';
 
-$ds = new DiffStorage([
+$ds = new MemoryDiffStorage([
 	'client_id' => 'INT',
 ], [
 	'description' => 'STRING',
