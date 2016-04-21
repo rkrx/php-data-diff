@@ -12,7 +12,7 @@ A handy tool for comparing structured data quickly in a key-value manner
 
 ## WTF
 
-This component is interesting for you, if you have a lot of structured data to import into a local database (for example) and you don't want to overwrite everything on each run. Instead, you want to know, what has changed actually and act accordingly.
+This component is interesting for you, if you have a lot of structured data to import into a local database (for example) and you don't want to overwrite everything on each run. Instead, you want to know, what actually has changed and act accordingly.
 
 ## Usage
 
