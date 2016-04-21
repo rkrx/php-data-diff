@@ -212,10 +212,9 @@ class DiffStorageStore implements \IteratorAggregate {
 		$stmt = $this->pdo->query($query);
 		$stmt->execute(['sA' => $this->storeA, 'sB' => $this->storeB]);
 		while($row = $stmt->fetch(PDO::FETCH_NUM)) {
-			$k = json_decode($row[0], true);
 			$d = json_decode($row[1], true);
 			$f = json_decode($row[2], true);
-			yield $k => new DiffStorageStoreRow($d, $f, $this->converter);
+			yield new DiffStorageStoreRow($d, $f, $this->converter);
 		}
 		$stmt->closeCursor();
 	}
