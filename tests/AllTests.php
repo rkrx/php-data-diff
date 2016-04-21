@@ -122,5 +122,24 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 		}
 		$this->assertTrue(false);
 	}
+
+	/**
+	 */
+	public function testTranslation() {
+		$ds = new MemoryDiffStorage([
+			'key' => 'INT',
+		], [
+			'value' => 'MD5',
+		]);
+
+		$ds->storeA()->addRow(['id' => 10, 'greeting' => 'Hello World'], ['id' => 'key', 'greeting' => 'value']);
+
+		foreach($ds->storeA() as $key => $value) {
+			$this->assertEquals(10, $value['key']);
+			$this->assertEquals('Hello World', $value['value']);
+			return;
+		}
+		$this->assertTrue(false);
+	}
 }
 

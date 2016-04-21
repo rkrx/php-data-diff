@@ -54,9 +54,11 @@ class DiffStorageStore implements \IteratorAggregate {
 
 	/**
 	 * @param array $data
+	 * @param array $translation
 	 * @param callable $duplicateKeyHandler
 	 */
-	public function addRow(array $data, $duplicateKeyHandler = null) {
+	public function addRow(array $data, array $translation = null, $duplicateKeyHandler = null) {
+		$data = $this->translate($data, $translation);
 		if($duplicateKeyHandler === null) {
 			$duplicateKeyHandler = $this->duplicateKeyHandler;
 		}
@@ -94,11 +96,15 @@ class DiffStorageStore implements \IteratorAggregate {
 
 	/**
 	 * @param Traversable|array $rows
+	 * @param array $translation
+	 * @param callable $duplicateKeyHandler
+	 * @return $this
 	 */
-	public function addRows($rows) {
+	public function addRows($rows, array $translation = null, $duplicateKeyHandler = null) {
 		foreach($rows as $row) {
-			$this->addRow($row);
+			$this->addRow($row, $translation, $duplicateKeyHandler);
 		}
+		return $this;
 	}
 
 	/**
@@ -241,5 +247,24 @@ class DiffStorageStore implements \IteratorAggregate {
 			yield $row->getData();
 		}
 		$stmt->closeCursor();
+	}
+
+	/**
+	 * @param array $data
+	 * @param array $translation
+	 * @return array
+	 */
+	private function translate(array $data, array $translation = null) {
+		if($translation !== null) {
+			$result = [];
+			foreach($data as $key => $value) {
+				if(array_key_exists($key, $translation)) {
+					$key = $translation[$key];
+				}
+				$result[$key] = $value;
+			}
+			return $result;
+		}
+		return $data;
 	}
 }
