@@ -8,7 +8,7 @@ class MemoryDiffStorage extends DiffStorage {
 	 * @param callable|null $duplicateKeyHandler
 	 * @param array $options
 	 */
-	public function __construct(array $keySchema, array $valueSchema, $duplicateKeyHandler, array $options) {
+	public function __construct(array $keySchema, array $valueSchema, $duplicateKeyHandler = null, array $options = []) {
 		if(!array_key_exists('dsn', $options)) {
 			$options['dsn'] = 'sqlite::memory:';
 		}

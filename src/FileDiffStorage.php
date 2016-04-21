@@ -9,7 +9,7 @@ class FileDiffStorage extends DiffStorage {
 	 * @param callable|null $duplicateKeyHandler
 	 * @param array $options
 	 */
-	public function __construct($filename = null, array $keySchema, array $valueSchema, $duplicateKeyHandler, array $options) {
+	public function __construct($filename = null, array $keySchema, array $valueSchema, $duplicateKeyHandler = null, array $options = []) {
 		if($filename === null) {
 			$filename = tempnam(sys_get_temp_dir(), 'data-diff-');
 		}
