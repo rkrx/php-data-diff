@@ -152,15 +152,11 @@ abstract class DiffStorage {
 	 */
 	private function compatibility() {
 		if(!$this->testStatement('SELECT printf("%0.2f", 19.99999) AS res')) {
-			$this->registerUDFunction('printf', function ($fmt, $arg) {
-				return sprintf($fmt, $arg);
-			});
+			$this->registerUDFunction('printf', 'sprintf');
 		}
 
 		if(!$this->testStatement('SELECT md5("aaa") AS md5res')) {
-			$this->registerUDFunction('md5', function ($arg) {
-				return md5($arg);
-			});
+			$this->registerUDFunction('md5', 'md5');
 		}
 	}
 
