@@ -4,7 +4,10 @@ namespace DataDiff;
 use Exception;
 use PDO;
 
-class DiffStorage {
+/**
+ * @package DataDiff
+ */
+abstract class DiffStorage {
 	/** @var PDO */
 	private $pdo = null;
 	/** @var DiffStorageStore */
@@ -26,10 +29,13 @@ class DiffStorage {
 	 * @param array $keySchema
 	 * @param array $valueSchema
 	 * @param callable|null $duplicateKeyHandler
-	 * @throws Exception
+	 * @param array $options
 	 */
-	public function __construct(array $keySchema, array $valueSchema, $duplicateKeyHandler = null) {
-		$this->pdo = new PDO('sqlite::memory:', null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+	public function __construct(array $keySchema, array $valueSchema, $duplicateKeyHandler = null, array $options) {
+		if(!array_key_exists('dsn', $options)) {
+			$options['dsn'] = 'sqlite::memory:';
+		}
+		$this->pdo = new PDO($options['dsn'], null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 		$this->pdo->exec("PRAGMA synchronous=OFF");
 		$this->pdo->exec("PRAGMA count_changes=OFF");
 		$this->pdo->exec("PRAGMA journal_mode=MEMORY");

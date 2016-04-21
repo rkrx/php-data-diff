@@ -2,7 +2,7 @@
 namespace DataDiff;
 
 class AllTests extends \PHPUnit_Framework_TestCase {
-	/** @var DiffStorage */
+	/** @var MemoryDiffStorage */
 	private $ds = null;
 
 	/**
@@ -10,7 +10,7 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 	public function setUp() {
 		parent::setUp();
 
-		$this->ds = new DiffStorage([
+		$this->ds = new MemoryDiffStorage([
 			'client_id' => 'INT',
 		], [
 			'client_id' => 'INT',
@@ -64,7 +64,7 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 	/**
 	 */
 	public function testDuplicateBehavior() {
-		$ds = new DiffStorage([
+		$ds = new MemoryDiffStorage([
 			'key' => 'INT',
 		], [
 			'value' => 'INT',
@@ -84,7 +84,7 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 	/**
 	 */
 	public function testDuplicateKeyHandlerBehavior() {
-		$ds = new DiffStorage([
+		$ds = new MemoryDiffStorage([
 			'key' => 'INT',
 		], [
 			'value' => 'INT',
@@ -107,7 +107,7 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 	/**
 	 */
 	public function testMD5() {
-		$ds = new DiffStorage([
+		$ds = new MemoryDiffStorage([
 			'key' => 'INT',
 		], [
 			'value' => 'MD5',
