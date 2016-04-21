@@ -108,6 +108,21 @@ class DiffStorageStore implements \IteratorAggregate {
 	}
 
 	/**
+	 * Returns true whenever there is any changed, added or removed data available
+	 */
+	public function hasAnyChanges() {
+		/** @noinspection PhpUnusedLocalVariableInspection */
+		foreach($this->getNewOrChanged() as $_) {
+			return true;
+		}
+		/** @noinspection PhpUnusedLocalVariableInspection */
+		foreach($this->getMissing() as $_) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Get all rows, that are present in this store, but not in the other
 	 *
 	 * @return Generator|DiffStorageStoreRow[]

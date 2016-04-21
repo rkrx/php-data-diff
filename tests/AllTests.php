@@ -63,6 +63,14 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 
 	/**
 	 */
+	public function testHasAnyChnges() {
+		$this->assertTrue($this->ds->storeB()->hasAnyChanges());
+		$emptyDs = new MemoryDiffStorage(['key' => 'INT'], ['val' => 'INT']);
+		$this->assertFalse($emptyDs->storeB()->hasAnyChanges());
+	}
+
+	/**
+	 */
 	public function testDuplicateBehavior() {
 		$ds = new MemoryDiffStorage([
 			'key' => 'INT',
