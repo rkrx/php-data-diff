@@ -191,11 +191,11 @@ $ds = new DiffStorage([
 ]);
 
 for($i=2; $i <= 501; $i++) {
-	$row = ['client_id' => $i, 'description' => 'Dies ist ein Test', 'total' => $i === 50 ? 60 : 59.98999, 'test' => $i % 2];
+	$row = ['client_id' => $i, 'description' => 'This is a test', 'total' => $i === 50 ? 60 : 59.98999, 'test' => $i % 2];
 	$ds->storeA()->addRow($row);
 }
 for($i=1; $i <= 500; $i++) {
-	$row = ['client_id' => $i, 'description' => 'Dies ist ein Test', 'total' => 59.98999, 'test' => $i % 3];
+	$row = ['client_id' => $i, 'description' => 'This is a test', 'total' => 59.98999, 'test' => $i % 3];
 	$ds->storeB()->addRow($row);
 }
 
