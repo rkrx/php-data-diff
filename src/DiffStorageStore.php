@@ -93,7 +93,7 @@ class DiffStorageStore implements \IteratorAggregate {
 	}
 
 	/**
-	 * @param Traversable $rows
+	 * @param Traversable|array $rows
 	 */
 	public function addRows($rows) {
 		foreach($rows as $row) {
