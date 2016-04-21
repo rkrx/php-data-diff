@@ -1,6 +1,8 @@
 # data-diff
 
 [![Build Status](https://travis-ci.org/rkrx/data-diff.svg)](https://travis-ci.org/rkrx/data-diff)
+[![Latest Stable Version](https://poser.pugx.org/rkr/data-diff/v/stable)](https://packagist.org/packages/rkr/data-diff)
+[![License](https://poser.pugx.org/rkr/data-diff/license)](https://packagist.org/packages/rkr/data-diff)
 
 A handy tool for comparing structured data quickly in a key-value manner
 
