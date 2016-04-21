@@ -112,7 +112,7 @@ $ds = new MemoryDiffStorage([
 ]);
 ```
 
-A `MemoryDiffStorage` consists of two storages: `StoreA` and `StoreB`. You can insert as many rows with as many columns into each store as you want as long as the rows contain at least the columns defined in the schema. _The columns also need to have appropriate names since these names are not translated anyhow. This means, if your columns have different names in the database and the other source, you have to normalize those keys, before you put the data into each `Store`._
+A `MemoryDiffStorage` consists of two storages: `StoreA` and `StoreB`. You can insert as many rows with as many columns into each store as you want as long as the rows contain at least the columns defined in the schema. _The columns also need to have appropriate names since these names are not translated automatically. Although, you can specify a translation when adding rows using the second parameter of `addRow` and `addRows`. This means, if your columns have different names in the database and the other source, you have to normalize those keys, before you put the data into each `Store`._
 
 Here is a example:
 
