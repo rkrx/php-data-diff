@@ -8,7 +8,7 @@ use PDO;
 /**
  * @package DataDiff
  */
-abstract class DiffStorage {
+abstract class DiffStorage implements DiffStorageInterface {
 	/** @var PDO */
 	private $pdo = null;
 	/** @var DiffStorageStore */

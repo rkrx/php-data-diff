@@ -18,5 +18,8 @@
 	},
 	"require-dev": {
 		"phpunit/phpunit": "~3.7@stable"
+	},
+	"suggest": {
+		"rkr/data-diff-helpers": "Some Helpers for rkr/data-diff"
 	}
 }

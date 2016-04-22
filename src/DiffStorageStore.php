@@ -6,7 +6,7 @@ use PDO;
 use PDOStatement;
 use Traversable;
 
-class DiffStorageStore implements \IteratorAggregate {
+class DiffStorageStore implements \IteratorAggregate, DiffStorageStoreInterface {
 	/** @var PDO */
 	private $pdo;
 	/** @var PDOStatement */

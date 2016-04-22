@@ -3,7 +3,7 @@ namespace DataDiff;
 
 use Exception;
 
-class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess {
+class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess, DiffStorageStoreRowInterface {
 	/** @var array */
 	private $data;
 	/** @var array */
