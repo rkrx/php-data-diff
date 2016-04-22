@@ -16,7 +16,7 @@ abstract class DiffStorage implements DiffStorageInterface {
 	/** @var DiffStorageStore */
 	private $storeB = null;
 	/** @var array */
-	private $keys;
+	private $keys = [];
 
 	/**
 	 * Predefined types:
@@ -37,6 +37,8 @@ abstract class DiffStorage implements DiffStorageInterface {
 		$this->initSqlite();
 		$this->compatibility();
 		$this->buildTables();
+
+		$this->keys = array_keys($keySchema);
 
 		$sqlKeySchema = $this->buildSchema($keySchema);
 		$sqlValueSchema = $this->buildSchema($valueSchema);
