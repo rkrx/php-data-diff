@@ -38,10 +38,7 @@ abstract class DiffStorage {
 		$this->pdo = new PDO($options['dsn'], null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 		$this->initSqlite();
 		$this->compatibility();
-
-		$this->pdo->exec('CREATE TABLE data_store (s_ab TEXT, s_key TEXT, s_value TEXT, s_data TEXT, s_sort INT, PRIMARY KEY(s_ab, s_key))');
-		$this->pdo->exec('CREATE INDEX data_store_ab_index ON data_store (s_ab, s_key)');
-		$this->pdo->exec('CREATE INDEX data_store_key_index ON data_store (s_key)');
+		$this->buildTables();
 
 		$sqlKeySchema = $this->buildSchema($keySchema);
 		$sqlValueSchema = $this->buildSchema($valueSchema);
@@ -103,6 +100,9 @@ abstract class DiffStorage {
 				case 'MD5':
 					$def[] = '\'"\'||md5(:'.$name.')||\'"\''; break;
 			}
+		}
+		if(!count($def)) {
+			throw new Exception('Can\'t operate with empty schema');
 		}
 		return join('||"|"||', $def);
 	}
@@ -182,5 +182,13 @@ abstract class DiffStorage {
 		$tryThis("PRAGMA count_changes=OFF");
 		$tryThis("PRAGMA journal_mode=MEMORY");
 		$tryThis("PRAGMA temp_store=MEMORY");
+	}
+
+	/**
+	 */
+	private function buildTables() {
+		$this->pdo->exec('CREATE TABLE data_store (s_ab TEXT, s_key TEXT, s_value TEXT, s_data TEXT, s_sort INT, PRIMARY KEY(s_ab, s_key))');
+		$this->pdo->exec('CREATE INDEX data_store_ab_index ON data_store (s_ab, s_key)');
+		$this->pdo->exec('CREATE INDEX data_store_key_index ON data_store (s_key)');
 	}
 }
