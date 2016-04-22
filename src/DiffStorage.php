@@ -1,6 +1,7 @@
 <?php
 namespace DataDiff;
 
+use DataDiff\Exceptions\EmptySchemaException;
 use Exception;
 use PDO;
 
@@ -28,13 +29,10 @@ abstract class DiffStorage {
 	 *
 	 * @param array $keySchema
 	 * @param array $valueSchema
-	 * @param callable|null $duplicateKeyHandler
 	 * @param array $options
 	 */
-	public function __construct(array $keySchema, array $valueSchema, $duplicateKeyHandler = null, array $options) {
-		if(!array_key_exists('dsn', $options)) {
-			$options['dsn'] = 'sqlite::memory:';
-		}
+	public function __construct(array $keySchema, array $valueSchema, array $options) {
+		$options = $this->defineOptionDefaults($options);
 		$this->pdo = new PDO($options['dsn'], null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 		$this->initSqlite();
 		$this->compatibility();
@@ -47,14 +45,8 @@ abstract class DiffStorage {
 		$valueConverter = $this->buildConverter($valueSchema);
 		$converter = array_merge($keyConverter, $valueConverter);
 
-		if($duplicateKeyHandler === null) {
-			$duplicateKeyHandler = function (array $newData = null, array $oldData = null) {
-				return array_merge($oldData, $newData);
-			};
-		}
-
-		$this->storeA = new DiffStorageStore($this->pdo, $sqlKeySchema, $sqlValueSchema, $converter, 'a', 'b', $duplicateKeyHandler);
-		$this->storeB = new DiffStorageStore($this->pdo, $sqlKeySchema, $sqlValueSchema, $converter, 'b', 'a', $duplicateKeyHandler);
+		$this->storeA = new DiffStorageStore($this->pdo, $sqlKeySchema, $sqlValueSchema, $converter, 'a', 'b', $options['duplicate_key_handler']);
+		$this->storeB = new DiffStorageStore($this->pdo, $sqlKeySchema, $sqlValueSchema, $converter, 'b', 'a', $options['duplicate_key_handler']);
 	}
 
 	/**
@@ -93,6 +85,8 @@ abstract class DiffStorage {
 					$def[] = 'printf("%d", :'.$name.')'; break;
 				case 'FLOAT':
 					$def[] = 'printf("%0.6f", :'.$name.')'; break;
+				case 'DOUBLE':
+					$def[] = 'printf("%0.12f", :'.$name.')'; break;
 				case 'MONEY':
 					$def[] = 'printf("%0.2f", :'.$name.')'; break;
 				case 'STRING':
@@ -102,7 +96,7 @@ abstract class DiffStorage {
 			}
 		}
 		if(!count($def)) {
-			throw new Exception('Can\'t operate with empty schema');
+			throw new EmptySchemaException('Can\'t operate with empty schema');
 		}
 		return join('||"|"||', $def);
 	}
@@ -122,6 +116,8 @@ abstract class DiffStorage {
 					$def[$name] = 'intval'; break;
 				case 'FLOAT':
 					$def[$name] = function ($value) { return number_format($value, 6, '.', ''); }; break;
+				case 'DOUBLE':
+					$def[$name] = function ($value) { return number_format($value, 12, '.', ''); }; break;
 				case 'MONEY':
 					$def[$name] = function ($value) { return number_format($value, 2, '.', ''); }; break;
 				case 'STRING':
@@ -190,5 +186,21 @@ abstract class DiffStorage {
 		$this->pdo->exec('CREATE TABLE data_store (s_ab TEXT, s_key TEXT, s_value TEXT, s_data TEXT, s_sort INT, PRIMARY KEY(s_ab, s_key))');
 		$this->pdo->exec('CREATE INDEX data_store_ab_index ON data_store (s_ab, s_key)');
 		$this->pdo->exec('CREATE INDEX data_store_key_index ON data_store (s_key)');
+	}
+
+	/**
+	 * @param array $options
+	 * @return array
+	 */
+	private function defineOptionDefaults($options) {
+		if(!array_key_exists('dsn', $options)) {
+			$options['dsn'] = 'sqlite::memory:';
+		}
+		if(!array_key_exists('duplicate_key_handler', $options)) {
+			$options['duplicate_key_handler'] = function (array $newData = null, array $oldData = null) {
+				return array_merge($oldData, $newData);
+			};
+		}
+		return $options;
 	}
 }

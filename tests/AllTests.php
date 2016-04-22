@@ -96,10 +96,12 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 			'key' => 'INT',
 		], [
 			'value' => 'INT',
-		], function (array $newData, array $oldData) {
-			$newData['value'] = $newData['value'] + $oldData['value'];
-			return $newData;
-		});
+		], [
+			'duplicate_key_handler' => function (array $newData, array $oldData) {
+				$newData['value'] = $newData['value'] + $oldData['value'];
+				return $newData;
+			}
+		]);
 
 		$ds->storeA()->addRow(['key' => 10, 'value' => 20]);
 		$ds->storeA()->addRow(['key' => 10, 'value' => 30]);
