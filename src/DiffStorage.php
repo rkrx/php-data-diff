@@ -36,10 +36,7 @@ abstract class DiffStorage {
 			$options['dsn'] = 'sqlite::memory:';
 		}
 		$this->pdo = new PDO($options['dsn'], null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-		$this->pdo->exec("PRAGMA synchronous=OFF");
-		$this->pdo->exec("PRAGMA count_changes=OFF");
-		$this->pdo->exec("PRAGMA journal_mode=MEMORY");
-		$this->pdo->exec("PRAGMA temp_store=MEMORY");
+		$this->initSqlite();
 		$this->compatibility();
 
 		$this->pdo->exec('CREATE TABLE data_store (s_ab TEXT, s_key TEXT, s_value TEXT, s_data TEXT, s_sort INT, PRIMARY KEY(s_ab, s_key))');
@@ -94,23 +91,17 @@ abstract class DiffStorage {
 		foreach($schema as $name => $type) {
 			switch ($type) {
 				case 'BOOL':
-					$def[] = sprintf('CASE WHEN CAST(:'.$name.' AS INT) = 0 THEN \'false\' ELSE \'true\' END');
-					break;
+					$def[] = sprintf('CASE WHEN CAST(:'.$name.' AS INT) = 0 THEN \'false\' ELSE \'true\' END'); break;
 				case 'INT':
-					$def[] = 'printf("%d", :'.$name.')';
-					break;
+					$def[] = 'printf("%d", :'.$name.')'; break;
 				case 'FLOAT':
-					$def[] = 'printf("%0.6f", :'.$name.')';
-					break;
+					$def[] = 'printf("%0.6f", :'.$name.')'; break;
 				case 'MONEY':
-					$def[] = 'printf("%0.2f", :'.$name.')';
-					break;
+					$def[] = 'printf("%0.2f", :'.$name.')'; break;
 				case 'STRING':
-					$def[] = '\'"\'||HEX(TRIM(:'.$name.'))||\'"\'';
-					break;
+					$def[] = '\'"\'||HEX(TRIM(:'.$name.'))||\'"\''; break;
 				case 'MD5':
-					$def[] = '\'"\'||md5(:'.$name.')||\'"\'';
-					break;
+					$def[] = '\'"\'||md5(:'.$name.')||\'"\''; break;
 			}
 		}
 		return join('||"|"||', $def);
@@ -126,23 +117,17 @@ abstract class DiffStorage {
 		foreach($schema as $name => $type) {
 			switch ($type) {
 				case 'BOOL':
-					$def[$name] = 'boolval';
-					break;
+					$def[$name] = 'boolval'; break;
 				case 'INT':
-					$def[$name] = 'intval';
-					break;
+					$def[$name] = 'intval'; break;
 				case 'FLOAT':
-					$def[$name] = function ($value) { return number_format($value, 6, '.', ''); };
-					break;
+					$def[$name] = function ($value) { return number_format($value, 6, '.', ''); }; break;
 				case 'MONEY':
-					$def[$name] = function ($value) { return number_format($value, 2, '.', ''); };
-					break;
+					$def[$name] = function ($value) { return number_format($value, 2, '.', ''); }; break;
 				case 'STRING':
-					$def[$name] = function ($value) { return (string) $value; };
-					break;
+					$def[$name] = function ($value) { return (string) $value; }; break;
 				case 'MD5':
-					$def[$name] = function ($value) { return md5((string) $value); };
-					break;
+					$def[$name] = function ($value) { return md5((string) $value); }; break;
 			}
 		}
 		return $def;
@@ -182,5 +167,20 @@ abstract class DiffStorage {
 			throw new Exception('It is not possible to create user defined functions for rkr/data-diff\'s sqlite instance');
 		}
 		call_user_func([$this->pdo, 'sqliteCreateFunction'], $name, $callback);
+	}
+
+	/**
+	 */
+	private function initSqlite() {
+		$tryThis = function ($query) {
+			try {
+				$this->pdo->exec($query);
+			} catch (Exception $e) {
+			}
+		};
+		$tryThis("PRAGMA synchronous=OFF");
+		$tryThis("PRAGMA count_changes=OFF");
+		$tryThis("PRAGMA journal_mode=MEMORY");
+		$tryThis("PRAGMA temp_store=MEMORY");
 	}
 }
