@@ -1,5 +1,7 @@
 # data-diff
 
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/20020c05-c30f-4660-9537-9eae7dab861c/mini.png)](https://insight.sensiolabs.com/projects/20020c05-c30f-4660-9537-9eae7dab861c)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/rkrx/data-diff/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/rkrx/data-diff/?branch=master)
 [![Build Status](https://travis-ci.org/rkrx/data-diff.svg)](https://travis-ci.org/rkrx/data-diff)
 [![Latest Stable Version](https://poser.pugx.org/rkr/data-diff/v/stable)](https://packagist.org/packages/rkr/data-diff)
 [![License](https://poser.pugx.org/rkr/data-diff/license)](https://packagist.org/packages/rkr/data-diff)

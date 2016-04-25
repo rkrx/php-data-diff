@@ -19,35 +19,37 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	private $storeA;
 	/** @var string */
 	private $storeB;
-	/** @var array */
-	private $keySchema;
-	/** @var array */
-	private $dataSchema;
 	/** @var int */
 	private $counter = 0;
 	/** @var callable */
 	private $duplicateKeyHandler;
 	/** @var array */
 	private $converter;
+	/** @var string[] */
+	private $keys;
+	/** @var string[] */
+	private $valueKeys;
 
 	/**
 	 * @param PDO $pdo
 	 * @param string $keySchema
 	 * @param string $valueSchema
+	 * @param string[] $keys
+	 * @param string[] $valueKeys
 	 * @param array $converter
-	 * @param callable $duplicateKeyHandler
 	 * @param string $storeA
 	 * @param string $storeB
+	 * @param callable $duplicateKeyHandler
 	 */
-	public function __construct(PDO $pdo, $keySchema, $valueSchema, array $converter, $storeA, $storeB, $duplicateKeyHandler) {
+	public function __construct(PDO $pdo, $keySchema, $valueSchema, array $keys, array $valueKeys, array $converter, $storeA, $storeB, $duplicateKeyHandler) {
 		$this->pdo = $pdo;
 		$this->selectStmt = $this->pdo->prepare("SELECT s_data FROM data_store WHERE s_ab='{$storeA}' AND s_key={$keySchema} AND (1=1 OR s_value={$valueSchema})");
 		$this->insertStmt = $this->pdo->prepare("INSERT INTO data_store (s_ab, s_key, s_value, s_data, s_sort) VALUES ('{$storeA}', {$keySchema}, {$valueSchema}, :___data, :___sort)");
 		$this->updateStmt = $this->pdo->prepare("UPDATE data_store SET s_value={$valueSchema}, s_data=:___data WHERE s_ab='{$storeA}' AND s_key={$keySchema}");
 		$this->storeA = $storeA;
 		$this->storeB = $storeB;
-		$this->keySchema = $keySchema;
-		$this->dataSchema = $valueSchema;
+		$this->keys = $keys;
+		$this->valueKeys = $valueKeys;
 		$this->converter = $converter;
 		$this->duplicateKeyHandler = $duplicateKeyHandler;
 	}
@@ -235,7 +237,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 		while($row = $stmt->fetch(PDO::FETCH_NUM)) {
 			$d = json_decode($row[1], true);
 			$f = json_decode($row[2], true);
-			yield new DiffStorageStoreRow($d, $f, $this->converter);
+			yield $this->instantiateRow($d, $f);
 		}
 		$stmt->closeCursor();
 	}
@@ -258,7 +260,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 		$stmt->execute(['s' => $this->storeA]);
 		while($row = $stmt->fetch(PDO::FETCH_NUM)) {
 			$row = json_decode($row[0], true);
-			$row = new DiffStorageStoreRow($row, [], $this->converter);
+			$row = $this->instantiateRow($row, []);
 			yield $row->getData();
 		}
 		$stmt->closeCursor();
@@ -299,5 +301,14 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 		$stmt->execute(['s' => $this->storeA]);
 		$count = $stmt->fetch(PDO::FETCH_COLUMN, 0);
 		return $count;
+	}
+
+	/**
+	 * @param array $localData
+	 * @param array $foreignData
+	 * @return DiffStorageStoreRow
+	 */
+	private function instantiateRow(array $localData = null, array $foreignData = null) {
+		return new DiffStorageStoreRow($localData, $foreignData, $this->keys, $this->valueKeys, $this->converter);
 	}
 }

@@ -3,30 +3,45 @@ namespace DataDiff;
 
 use Exception;
 
-class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess, DiffStorageStoreRowInterface {
+class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	/** @var array */
-	private $data;
-	/** @var array */
-	private $row;
-	/** @var array */
-	private $foreignRow;
-	/** @var array */
-	private $converter;
+	private $data = [];
+	/** @var DiffStorageStoreRowData */
+	private $localData;
+	/** @var DiffStorageStoreRowData */
+	private $foreignRowData;
 
 	/**
-	 * @param array $row
-	 * @param array $foreignRow
+	 * @param array $localData
+	 * @param array $foreignData
+	 * @param array $keys
+	 * @param array $valueKeys
 	 * @param array $converter
 	 */
-	public function __construct(array $row = null, array $foreignRow = null, array $converter) {
-		$this->row = is_array($row) ? $row : [];
-		$this->converter = $converter;
-		$this->foreignRow = is_array($foreignRow) ? $foreignRow : [];
-		if($row !== null) {
-			$this->data = $row;
-		} elseif($foreignRow !== null) {
-			$this->data = $foreignRow;
+	public function __construct(array $localData = null, array $foreignData = null, array $keys, array $valueKeys, array $converter) {
+		if($localData !== null) {
+			$this->data = $localData;
+		} elseif($foreignData !== null) {
+			$this->data = $foreignData;
 		}
+		$localData = is_array($localData) ? $localData : [];
+		$foreignData = is_array($foreignData) ? $foreignData : [];
+		$this->localData = new DiffStorageStoreRowData($localData, $foreignData, $keys, $valueKeys, $converter);
+		$this->foreignRowData = new DiffStorageStoreRowData($foreignData, $localData, $keys, $valueKeys, $converter);
+	}
+
+	/**
+	 * @return DiffStorageStoreRowData
+	 */
+	public function getLocal() {
+		return $this->localData;
+	}
+
+	/**
+	 * @return DiffStorageStoreRowData
+	 */
+	public function getForeign() {
+		return $this->foreignRowData;
 	}
 
 	/**
@@ -38,19 +53,19 @@ class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess, DiffStorag
 	 * @return array
 	 */
 	public function getData(array $options = []) {
-		return $this->applyOptions($this->row, $options);
+		return $this->localData->getData($options);
 	}
 
 	/**
 	 * `$options` are:
 	 * * `keys`: Only these keys are considered and returned
 	 * * `ignore`: These keys are ignored and omitted
-	 * 
+	 *
 	 * @param array $options
 	 * @return array
 	 */
 	public function getForeignData(array $options = []) {
-		return $this->applyOptions($this->foreignRow, $options);
+		return $this->foreignRowData->getData($options);
 	}
 
 	/**
@@ -58,34 +73,7 @@ class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess, DiffStorag
 	 * @return array
 	 */
 	public function getDiff(array $fields = null) {
-		$diff = [];
-		$diffFn = function ($keysA) use (&$diff, $fields) {
-			foreach($keysA as $key) {
-				if($fields !== null && !in_array($key, $fields)) {
-					continue;
-				}
-				if(!array_key_exists($key, $this->foreignRow)) {
-					$diff[$key] = ['local' => $this->row[$key], 'foreign' => null];
-				} elseif(!array_key_exists($key, $this->row)) {
-					$diff[$key] = ['local' => null, 'foreign' => $this->foreignRow[$key]];
-				} else {
-					$v1 = $this->row[$key];
-					$v2 = $this->foreignRow[$key];
-					if(array_key_exists($key, $this->converter)) {
-						$v1 = call_user_func($this->converter[$key], $v1);
-						$v2 = call_user_func($this->converter[$key], $v2);
-					}
-					if(json_encode($v1) !== json_encode($v2)) {
-						$diff[$key] = ['local' => $this->row[$key], 'foreign' => $this->foreignRow[$key]];
-					}
-				}
-			}
-		};
-		$keysA = array_keys($this->row);
-		$keysB = array_keys($this->foreignRow);
-		$diffFn($keysA);
-		$diffFn($keysB);
-		return $diff;
+		return $this->localData->getDiff($fields);
 	}
 
 	/**
@@ -95,22 +83,14 @@ class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess, DiffStorag
 	 * @throws Exception
 	 */
 	public function getDiffFormatted(array $fields = null, $format = null) {
-		$diff = $this->getDiff($fields);
-		if($format === null) {
-			$result = [];
-			foreach($diff as $fieldName => $values) {
-				$result[] = sprintf("%s: %s -> %s", $fieldName, $values['foreign'], $values['local']);
-			}
-			return join(', ', $result);
-		}
-		throw new Exception("Unknown format: {$format}");
+		return $this->localData->getDiffFormatted($fields, $format);
 	}
 
 	/**
 	 * @return mixed
 	 */
-	function jsonSerialize() {
-		return $this->formatRow($this->data);
+	public function jsonSerialize() {
+		return $this->data;
 	}
 
 	/**
@@ -149,34 +129,5 @@ class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess, DiffStorag
 		if($this->offsetExists($offset)) {
 			unset($this->data[$offset]);
 		}
-	}
-
-	/**
-	 * @param array $row
-	 * @return array
-	 */
-	private function formatRow($row) {
-		$schema = $this->converter;
-		$schema = array_map(function () { return null; }, $schema);
-		$row = array_merge($schema, $row);
-		return $row;
-	}
-
-	/**
-	 * @param array $row
-	 * @param array $options
-	 * @return array
-	 */
-	private function applyOptions(array $row, array $options) {
-		if(count($options) < 1) {
-			return $row;
-		}
-		if(array_key_exists('keys', $options)) {
-			$row = array_intersect_key($row, array_combine($options['keys'], $options['keys']));
-		}
-		if(array_key_exists('ignore', $options)) {
-			$row = array_diff_key($row, array_combine($options['ignore'], $options['ignore']));
-		}
-		return $row;
 	}
 }

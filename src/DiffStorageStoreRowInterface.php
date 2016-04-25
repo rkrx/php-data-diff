@@ -2,8 +2,10 @@
 namespace DataDiff;
 
 use Exception;
+use JsonSerializable;
+use ArrayAccess;
 
-interface DiffStorageStoreRowInterface {
+interface DiffStorageStoreRowInterface extends JsonSerializable, ArrayAccess {
 	/**
 	 * `$options` are:
 	 * * `keys`: Only these keys are considered and returned
@@ -41,7 +43,7 @@ interface DiffStorageStoreRowInterface {
 	/**
 	 * @return mixed
 	 */
-	function jsonSerialize();
+	public function jsonSerialize();
 
 	/**
 	 * @param mixed $offset

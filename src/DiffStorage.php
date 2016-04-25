@@ -17,6 +17,8 @@ abstract class DiffStorage implements DiffStorageInterface {
 	private $storeB = null;
 	/** @var array */
 	private $keys = [];
+	/** @var array */
+	private $valueKeys = [];
 
 	/**
 	 * Predefined types:
@@ -39,6 +41,7 @@ abstract class DiffStorage implements DiffStorageInterface {
 		$this->buildTables();
 
 		$this->keys = array_keys($keySchema);
+		$this->valueKeys = array_keys($valueSchema);
 
 		$sqlKeySchema = $this->buildSchema($keySchema);
 		$sqlValueSchema = $this->buildSchema($valueSchema);
@@ -47,8 +50,8 @@ abstract class DiffStorage implements DiffStorageInterface {
 		$valueConverter = $this->buildConverter($valueSchema);
 		$converter = array_merge($keyConverter, $valueConverter);
 
-		$this->storeA = new DiffStorageStore($this->pdo, $sqlKeySchema, $sqlValueSchema, $converter, 'a', 'b', $options['duplicate_key_handler']);
-		$this->storeB = new DiffStorageStore($this->pdo, $sqlKeySchema, $sqlValueSchema, $converter, 'b', 'a', $options['duplicate_key_handler']);
+		$this->storeA = new DiffStorageStore($this->pdo, $sqlKeySchema, $sqlValueSchema, $this->keys, $this->valueKeys, $converter, 'a', 'b', $options['duplicate_key_handler']);
+		$this->storeB = new DiffStorageStore($this->pdo, $sqlKeySchema, $sqlValueSchema, $this->keys, $this->valueKeys, $converter, 'b', 'a', $options['duplicate_key_handler']);
 	}
 
 	/**
@@ -74,7 +77,7 @@ abstract class DiffStorage implements DiffStorageInterface {
 
 	/**
 	 * @param array $schema
-	 * @return array
+	 * @return string
 	 * @throws Exception
 	 */
 	private function buildSchema($schema) {
@@ -82,19 +85,26 @@ abstract class DiffStorage implements DiffStorageInterface {
 		foreach($schema as $name => $type) {
 			switch ($type) {
 				case 'BOOL':
-					$def[] = sprintf('CASE WHEN CAST(:'.$name.' AS INT) = 0 THEN \'false\' ELSE \'true\' END'); break;
+					$def[] = sprintf('CASE WHEN CAST(:'.$name.' AS INT) = 0 THEN \'false\' ELSE \'true\' END');
+					break;
 				case 'INT':
-					$def[] = 'printf("%d", :'.$name.')'; break;
+					$def[] = 'printf("%d", :'.$name.')';
+					break;
 				case 'FLOAT':
-					$def[] = 'printf("%0.6f", :'.$name.')'; break;
+					$def[] = 'printf("%0.6f", :'.$name.')';
+					break;
 				case 'DOUBLE':
-					$def[] = 'printf("%0.12f", :'.$name.')'; break;
+					$def[] = 'printf("%0.12f", :'.$name.')';
+					break;
 				case 'MONEY':
-					$def[] = 'printf("%0.2f", :'.$name.')'; break;
+					$def[] = 'printf("%0.2f", :'.$name.')';
+					break;
 				case 'STRING':
-					$def[] = '\'"\'||HEX(TRIM(:'.$name.'))||\'"\''; break;
+					$def[] = '\'"\'||HEX(TRIM(:'.$name.'))||\'"\'';
+					break;
 				case 'MD5':
-					$def[] = '\'"\'||md5(:'.$name.')||\'"\''; break;
+					$def[] = '\'"\'||md5(:'.$name.')||\'"\'';
+					break;
 			}
 		}
 		if(!count($def)) {
@@ -113,19 +123,26 @@ abstract class DiffStorage implements DiffStorageInterface {
 		foreach($schema as $name => $type) {
 			switch ($type) {
 				case 'BOOL':
-					$def[$name] = 'boolval'; break;
+					$def[$name] = 'boolval';
+					break;
 				case 'INT':
-					$def[$name] = 'intval'; break;
+					$def[$name] = 'intval';
+					break;
 				case 'FLOAT':
-					$def[$name] = function ($value) { return number_format($value, 6, '.', ''); }; break;
+					$def[$name] = function ($value) { return number_format($value, 6, '.', ''); };
+					break;
 				case 'DOUBLE':
-					$def[$name] = function ($value) { return number_format($value, 12, '.', ''); }; break;
+					$def[$name] = function ($value) { return number_format($value, 12, '.', ''); };
+					break;
 				case 'MONEY':
-					$def[$name] = function ($value) { return number_format($value, 2, '.', ''); }; break;
+					$def[$name] = function ($value) { return number_format($value, 2, '.', ''); };
+					break;
 				case 'STRING':
-					$def[$name] = function ($value) { return (string) $value; }; break;
+					$def[$name] = function ($value) { return (string) $value; };
+					break;
 				case 'MD5':
-					$def[$name] = function ($value) { return md5((string) $value); }; break;
+					$def[$name] = function ($value) { return md5((string) $value); };
+					break;
 			}
 		}
 		return $def;
@@ -174,6 +191,7 @@ abstract class DiffStorage implements DiffStorageInterface {
 			try {
 				$this->pdo->exec($query);
 			} catch (Exception $e) {
+				// If the execution failed, go on anyways
 			}
 		};
 		$tryThis("PRAGMA synchronous=OFF");
