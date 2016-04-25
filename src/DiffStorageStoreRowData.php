@@ -124,10 +124,10 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 		if(count($options) < 1) {
 			return $row;
 		}
-		if(array_key_exists('keys', $options)) {
+		if(array_key_exists('keys', $options) && is_array($options['keys'])) {
 			$row = array_intersect_key($row, array_combine($options['keys'], $options['keys']));
 		}
-		if(array_key_exists('ignore', $options)) {
+		if(array_key_exists('ignore', $options) && is_array($options['ignore'])) {
 			$row = array_diff_key($row, array_combine($options['ignore'], $options['ignore']));
 		}
 		return $row;
