@@ -6,7 +6,7 @@ use PDO;
 use PDOStatement;
 use Traversable;
 
-class DiffStorageStore implements \IteratorAggregate, DiffStorageStoreInterface {
+class DiffStorageStore implements DiffStorageStoreInterface {
 	/** @var PDO */
 	private $pdo;
 	/** @var PDOStatement */
@@ -281,5 +281,23 @@ class DiffStorageStore implements \IteratorAggregate, DiffStorageStoreInterface 
 			return $result;
 		}
 		return $data;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function count() {
+		$query = '
+			SELECT
+				COUNT(*)
+			FROM
+				data_store AS s1
+			WHERE
+				s1.s_ab = :s
+		';
+		$stmt = $this->pdo->query($query);
+		$stmt->execute(['s' => $this->storeA]);
+		$count = $stmt->fetch(PDO::FETCH_COLUMN, 0);
+		return $count;
 	}
 }

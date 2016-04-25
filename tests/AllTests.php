@@ -151,5 +151,22 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 		}
 		$this->assertTrue(false);
 	}
+
+	/**
+	 */
+	public function testCount() {
+		$ds = new MemoryDiffStorage([
+			'key' => 'INT',
+		], [
+			'value' => 'MD5',
+		]);
+
+		for($i=1; $i<=100; $i++) {
+			$ds->storeA()->addRow(['key' => $i, 'value' => 'Hello World']);
+		}
+
+		$this->assertEquals(100, $ds->storeA()->count());
+		$this->assertEquals(100, count($ds->storeA()));
+	}
 }
 

@@ -3,8 +3,10 @@ namespace DataDiff;
 
 use Generator;
 use Traversable;
+use Countable;
+use IteratorAggregate;
 
-interface DiffStorageStoreInterface {
+interface DiffStorageStoreInterface extends Countable, IteratorAggregate {
 	/**
 	 * @param array $data
 	 * @param array $translation
@@ -60,4 +62,9 @@ interface DiffStorageStoreInterface {
 	 * @return Traversable|array[]
 	 */
 	public function getIterator();
+
+	/**
+	 * @return int
+	 */
+	public function count();
 }
