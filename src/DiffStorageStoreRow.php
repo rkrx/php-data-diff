@@ -30,17 +30,27 @@ class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess, DiffStorag
 	}
 
 	/**
+	 * `$options` are:
+	 * * `keys`: Only these keys are considered and returned
+	 * * `ignore`: These keys are ignored and omitted
+	 *
+	 * @param array $options
 	 * @return array
 	 */
-	public function getData() {
-		return $this->row;
+	public function getData(array $options = []) {
+		return $this->applyOptions($this->row, $options);
 	}
 
 	/**
+	 * `$options` are:
+	 * * `keys`: Only these keys are considered and returned
+	 * * `ignore`: These keys are ignored and omitted
+	 * 
+	 * @param array $options
 	 * @return array
 	 */
-	public function getForeignData() {
-		return $this->foreignRow;
+	public function getForeignData(array $options = []) {
+		return $this->applyOptions($this->foreignRow, $options);
 	}
 
 	/**
@@ -149,6 +159,24 @@ class DiffStorageStoreRow implements \JsonSerializable, \ArrayAccess, DiffStorag
 		$schema = $this->converter;
 		$schema = array_map(function () { return null; }, $schema);
 		$row = array_merge($schema, $row);
+		return $row;
+	}
+
+	/**
+	 * @param array $row
+	 * @param array $options
+	 * @return array
+	 */
+	private function applyOptions(array $row, array $options) {
+		if(count($options) < 1) {
+			return $row;
+		}
+		if(array_key_exists('keys', $options)) {
+			$row = array_intersect_key($row, array_combine($options['keys'], $options['keys']));
+		}
+		if(array_key_exists('ignore', $options)) {
+			$row = array_diff_key($row, array_combine($options['ignore'], $options['ignore']));
+		}
 		return $row;
 	}
 }

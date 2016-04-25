@@ -168,5 +168,43 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 		$this->assertEquals(100, $ds->storeA()->count());
 		$this->assertEquals(100, count($ds->storeA()));
 	}
+
+	/**
+	 */
+	public function testGetDataOptionKeys() {
+		$ds = new MemoryDiffStorage([
+			'key' => 'INT',
+		], [
+			'a' => 'STRING',
+			'b' => 'STRING',
+			'c' => 'STRING',
+		]);
+		$ds->storeA()->addRow(['key' => 1, 'a' => 1, 'b' => 2, 'c' => 3]);
+		$rows = $ds->storeA()->getNew();
+		foreach($rows as $row) {
+			$this->assertEquals(['a' => 1, 'b' => 2], $row->getData(['keys' => ['a', 'b']]));
+			return;
+		}
+		$this->assertTrue(false);
+	}
+
+	/**
+	 */
+	public function testGetDataOptionIgnore() {
+		$ds = new MemoryDiffStorage([
+			'key' => 'INT',
+		], [
+			'a' => 'STRING',
+			'b' => 'STRING',
+			'c' => 'STRING',
+		]);
+		$ds->storeA()->addRow(['key' => 1, 'a' => 1, 'b' => 2, 'c' => 3]);
+		$rows = $ds->storeA()->getNew();
+		foreach($rows as $row) {
+			$this->assertEquals(['key' => 1, 'c' => 3], $row->getData(['ignore' => ['a', 'b']]));
+			return;
+		}
+		$this->assertTrue(false);
+	}
 }
 

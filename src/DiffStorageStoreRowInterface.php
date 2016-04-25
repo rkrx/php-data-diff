@@ -5,14 +5,24 @@ use Exception;
 
 interface DiffStorageStoreRowInterface {
 	/**
+	 * `$options` are:
+	 * * `keys`: Only these keys are considered and returned
+	 * * `ignore`: These keys are ignored and omitted
+	 *
+	 * @param array $options
 	 * @return array
 	 */
-	public function getData();
+	public function getData(array $options = []);
 
 	/**
+	 * `$options` are:
+	 * * `keys`: Only these keys are considered and returned
+	 * * `ignore`: These keys are ignored and omitted
+	 *
+	 * @param array $options
 	 * @return array
 	 */
-	public function getForeignData();
+	public function getForeignData(array $options = []);
 
 	/**
 	 * @param array $fields
