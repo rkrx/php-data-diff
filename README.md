@@ -179,6 +179,13 @@ The result is `This row is not present in store a: stock: 12 -> 66, last-change:
 
 As you may notice, `D0001` is not present in the result-set. This is because the schema already normalized the decimal-precision of the column `price` so, that there did not occur any differences.
 
+You can also access the data divided in keys and values as defined in each schema. This is helpful if you want to build SQL-Statements from the schema. You can treat the keys as the `WHERE`-Conditions in an `UPDATE`-Sql-Statement and the Values as the actual data to change (`SET`):
+
+```
+print_r($row->getLocal()->getKeyData());
+print_r($row->getLocal()->getValueData());
+```
+
 ## Example
 
 ```PHP
