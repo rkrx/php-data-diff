@@ -12,6 +12,8 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	/** @var PDOStatement */
 	private $insertStmt;
 	/** @var PDOStatement */
+	private $replaceStmt;
+	/** @var PDOStatement */
 	private $selectStmt;
 	/** @var PDOStatement */
 	private $updateStmt;
@@ -44,6 +46,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	public function __construct(PDO $pdo, $keySchema, $valueSchema, array $keys, array $valueKeys, array $converter, $storeA, $storeB, $duplicateKeyHandler) {
 		$this->pdo = $pdo;
 		$this->selectStmt = $this->pdo->prepare("SELECT s_data FROM data_store WHERE s_ab='{$storeA}' AND s_key={$keySchema} AND (1=1 OR s_value={$valueSchema})");
+		$this->replaceStmt = $this->pdo->prepare("INSERT OR REPLACE INTO data_store (s_ab, s_key, s_value, s_data, s_sort) VALUES ('{$storeA}', {$keySchema}, {$valueSchema}, :___data, :___sort)");
 		$this->insertStmt = $this->pdo->prepare("INSERT INTO data_store (s_ab, s_key, s_value, s_data, s_sort) VALUES ('{$storeA}', {$keySchema}, {$valueSchema}, :___data, :___sort)");
 		$this->updateStmt = $this->pdo->prepare("UPDATE data_store SET s_value={$valueSchema}, s_data=:___data WHERE s_ab='{$storeA}' AND s_key={$keySchema}");
 		$this->storeA = $storeA;
@@ -71,27 +74,31 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 			$metaData['___sort'] = $this->counter;
 			return $metaData;
 		};
-		try {
-			$metaData = $buildMetaData($data, $this->converter);
-			$this->insertStmt->execute($metaData);
-		} catch (\PDOException $e) {
-			if(strpos($e->getMessage(), 'UNIQUE constraint failed') !== false) {
-				$metaData = $buildMetaData($data, $this->converter);
-				unset($metaData['___data']);
-				unset($metaData['___sort']);
-				$this->selectStmt->execute($metaData);
-				$oldData = $this->selectStmt->fetch(PDO::FETCH_COLUMN, 0);
-				if($oldData === null) {
-					$oldData = [];
+		$metaData = $buildMetaData($data, $this->converter);
+		if($duplicateKeyHandler === null) {
+			$this->replaceStmt->execute($metaData);
+		} else {
+			try {
+				$this->insertStmt->execute($metaData);
+			} catch (\PDOException $e) {
+				if(strpos($e->getMessage(), 'UNIQUE constraint failed') !== false) {
+					$metaData = $buildMetaData($data, $this->converter);
+					unset($metaData['___data']);
+					unset($metaData['___sort']);
+					$this->selectStmt->execute($metaData);
+					$oldData = $this->selectStmt->fetch(PDO::FETCH_COLUMN, 0);
+					if($oldData === null) {
+						$oldData = [];
+					} else {
+						$oldData = json_decode($oldData, true);
+					}
+					$data = $duplicateKeyHandler($data, $oldData);
+					$metaData = $buildMetaData($data, $this->converter);
+					unset($metaData['___sort']);
+					$this->updateStmt->execute($metaData);
 				} else {
-					$oldData = json_decode($oldData, true);
+					throw $e;
 				}
-				$data = $duplicateKeyHandler($data, $oldData);
-				$metaData = $buildMetaData($data, $this->converter);
-				unset($metaData['___sort']);
-				$this->updateStmt->execute($metaData);
-			} else {
-				throw $e;
 			}
 		}
 	}
