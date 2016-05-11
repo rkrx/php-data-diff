@@ -129,13 +129,13 @@ abstract class DiffStorage implements DiffStorageInterface {
 					$def[$name] = 'intval';
 					break;
 				case 'FLOAT':
-					$def[$name] = function ($value) { return number_format($value, 6, '.', ''); };
+					$def[$name] = function ($value) { return number_format((float) $value, 6, '.', ''); };
 					break;
 				case 'DOUBLE':
-					$def[$name] = function ($value) { return number_format($value, 12, '.', ''); };
+					$def[$name] = function ($value) { return number_format((float) $value, 12, '.', ''); };
 					break;
 				case 'MONEY':
-					$def[$name] = function ($value) { return number_format($value, 2, '.', ''); };
+					$def[$name] = function ($value) { return number_format((float) $value, 2, '.', ''); };
 					break;
 				case 'STRING':
 					$def[$name] = function ($value) { return (string) $value; };
