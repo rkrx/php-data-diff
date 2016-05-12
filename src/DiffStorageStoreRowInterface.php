@@ -7,6 +7,16 @@ use ArrayAccess;
 
 interface DiffStorageStoreRowInterface extends JsonSerializable, ArrayAccess {
 	/**
+	 * @return DiffStorageStoreRowDataInterface
+	 */
+	public function getLocal();
+
+	/**
+	 * @return DiffStorageStoreRowDataInterface
+	 */
+	public function getForeign();
+
+	/**
 	 * `$options` are:
 	 * * `keys`: Only these keys are considered and returned
 	 * * `ignore`: These keys are ignored and omitted
@@ -69,4 +79,9 @@ interface DiffStorageStoreRowInterface extends JsonSerializable, ArrayAccess {
 	 * @return void
 	 */
 	public function offsetUnset($offset);
+
+	/**
+	 * @return string
+	 */
+	public function __toString();
 }

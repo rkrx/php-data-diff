@@ -107,8 +107,17 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 		$diff = $this->getDiff($fields);
 		if($format === null) {
 			$result = [];
+			$formatVal = function ($value) {
+				$value = preg_replace('/\\s+/', ' ', $value);
+				if(strlen($value) > 20) {
+					$value = substr($value, 0, 16) . ' ...';
+				}
+				return $value;
+			};
 			foreach($diff as $fieldName => $values) {
-				$result[] = sprintf("%s: %s -> %s", $fieldName, $values['foreign'], $values['local']);
+				$foreignValue = $formatVal($values['foreign']);
+				$localValue = $formatVal($values['local']);
+				$result[] = sprintf("%s: %s -> %s", $fieldName, $foreignValue, $localValue);
 			}
 			return join(', ', $result);
 		}

@@ -10,6 +10,8 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	private $localData;
 	/** @var DiffStorageStoreRowData */
 	private $foreignRowData;
+	/** @var callable */
+	private $stringFormatter;
 
 	/**
 	 * @param array $localData
@@ -17,8 +19,9 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	 * @param array $keys
 	 * @param array $valueKeys
 	 * @param array $converter
+	 * @param callable $stringFormatter
 	 */
-	public function __construct(array $localData = null, array $foreignData = null, array $keys, array $valueKeys, array $converter) {
+	public function __construct(array $localData = null, array $foreignData = null, array $keys, array $valueKeys, array $converter, $stringFormatter) {
 		if($localData !== null) {
 			$this->data = $localData;
 		} elseif($foreignData !== null) {
@@ -28,6 +31,7 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 		$foreignData = is_array($foreignData) ? $foreignData : [];
 		$this->localData = new DiffStorageStoreRowData($localData, $foreignData, $keys, $valueKeys, $converter);
 		$this->foreignRowData = new DiffStorageStoreRowData($foreignData, $localData, $keys, $valueKeys, $converter);
+		$this->stringFormatter = $stringFormatter;
 	}
 
 	/**
@@ -129,5 +133,12 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 		if($this->offsetExists($offset)) {
 			unset($this->data[$offset]);
 		}
+	}
+
+	/**
+	 * @return string
+	 */
+	public function __toString() {
+		return (string) call_user_func($this->stringFormatter, $this);
 	}
 }

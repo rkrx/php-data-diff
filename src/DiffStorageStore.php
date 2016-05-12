@@ -152,7 +152,9 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 				s2.s_ab IS NULL
 			ORDER BY
 				s1.s_sort
-		');
+		', function (DiffStorageStoreRowInterface $row) {
+			return $this->formatNewRow($row);
+		});
 	}
 
 	/**
@@ -176,7 +178,9 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 				s1.s_value != s2.s_value
 			ORDER BY
 				s1.s_sort
-		');
+		', function (DiffStorageStoreRowInterface $row) {
+			return $this->formatChangedRow($row);
+		});
 	}
 
 	/**
@@ -198,7 +202,13 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 				((s2.s_ab IS NULL) OR (s1.s_value != s2.s_value))
 			ORDER BY
 				s1.s_sort
-		');
+		', function (DiffStorageStoreRowInterface $row) {
+			if(count($row->getForeign()->getValueData())) {
+				return $this->formatChangedRow($row);
+			} else {
+				return $this->formatNewRow($row);
+			}
+		});
 	}
 
 	/**
@@ -222,7 +232,9 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 				s2.s_ab IS NULL
 			ORDER BY
 				s1.s_sort
-		');
+		', function (DiffStorageStoreRowInterface $row) {
+			return $this->formatMissingRow($row);
+		});
 	}
 
 	/**
@@ -236,15 +248,16 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 
 	/**
 	 * @param string $query
-	 * @return Generator|DiffStorageStoreRow[]
+	 * @param callable $stringFormatter
+	 * @return DiffStorageStoreRow[]|Generator
 	 */
-	private function query($query) {
+	private function query($query, $stringFormatter) {
 		$stmt = $this->pdo->query($query);
 		$stmt->execute(['sA' => $this->storeA, 'sB' => $this->storeB]);
 		while($row = $stmt->fetch(PDO::FETCH_NUM)) {
 			$d = json_decode($row[1], true);
 			$f = json_decode($row[2], true);
-			yield $this->instantiateRow($d, $f);
+			yield $this->instantiateRow($d, $f, $stringFormatter);
 		}
 		$stmt->closeCursor();
 	}
@@ -267,7 +280,9 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 		$stmt->execute(['s' => $this->storeA]);
 		while($row = $stmt->fetch(PDO::FETCH_NUM)) {
 			$row = json_decode($row[0], true);
-			$row = $this->instantiateRow($row, []);
+			$row = $this->instantiateRow($row, [], function (DiffStorageStoreRowInterface $row) {
+				return $this->formatKeyValuePairs($row->getData());
+			});
 			yield $row->getData();
 		}
 		$stmt->closeCursor();
@@ -313,9 +328,57 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	/**
 	 * @param array $localData
 	 * @param array $foreignData
+	 * @param callable $stringFormatter
 	 * @return DiffStorageStoreRow
 	 */
-	private function instantiateRow(array $localData = null, array $foreignData = null) {
-		return new DiffStorageStoreRow($localData, $foreignData, $this->keys, $this->valueKeys, $this->converter);
+	private function instantiateRow(array $localData = null, array $foreignData = null, $stringFormatter) {
+		return new DiffStorageStoreRow($localData, $foreignData, $this->keys, $this->valueKeys, $this->converter, $stringFormatter);
+	}
+
+	/**
+	 * @param DiffStorageStoreRowInterface $row
+	 * @return string
+	 */
+	private function formatNewRow(DiffStorageStoreRowInterface $row) {
+		$keys = $this->formatKeyValuePairs($row->getLocal()->getKeyData());
+		$values = $this->formatKeyValuePairs($row->getLocal()->getValueData());
+		return sprintf("New %s (%s)", $keys, $values);
+	}
+
+	/**
+	 * @param DiffStorageStoreRowInterface $row
+	 * @return string
+	 */
+	private function formatChangedRow(DiffStorageStoreRowInterface $row) {
+		$keys = $this->formatKeyValuePairs($row->getLocal()->getKeyData());
+		$values = $row->getForeign()->getValueData();
+		$valueKeys = array_keys($values);
+		return sprintf("Changed %s => %s", $keys, $row->getDiffFormatted($valueKeys));
+	}
+
+	/**
+	 * @param DiffStorageStoreRowInterface $row
+	 * @return string
+	 */
+	private function formatMissingRow(DiffStorageStoreRowInterface $row) {
+		$keys = $this->formatKeyValuePairs($row->getForeign()->getKeyData());
+		$values = $this->formatKeyValuePairs($row->getForeign()->getValueData());
+		return sprintf("Missing %s (%s)", $keys, $values);
+	}
+
+	/**
+	 * @param array $keyValues
+	 * @return string
+	 */
+	private function formatKeyValuePairs($keyValues) {
+		$keyParts = [];
+		foreach($keyValues as $key => $value) {
+			$value = preg_replace('/\\s+/', ' ', $value);
+			if(strlen($value) > 20) {
+				$value = substr($value, 0, 16) . ' ...';
+			}
+			$keyParts[] = sprintf("%s: %s", $key, json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+		}
+		return join(', ', $keyParts);
 	}
 }
