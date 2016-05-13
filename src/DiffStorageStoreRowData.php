@@ -82,7 +82,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 				$value = null;
 				if(array_key_exists($key, $row)) {
 					$value = $row[$key];
-					if(array_key_exists($key, $this->converter)) {
+					if(array_key_exists($key, $this->converter) && $value !== null) {
 						$value = call_user_func($this->converter[$key], $value);
 					}
 				}
