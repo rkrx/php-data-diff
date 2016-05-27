@@ -90,6 +90,15 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 			};
 			$localValue = call_user_func($conv, $formattedLocalRow);
 			$foreignValue = call_user_func($conv, $formattedForeignRow);
+
+			if(is_scalar($localValue)) {
+				$localValue = (string) $localValue;
+			}
+
+			if(is_scalar($foreignValue)) {
+				$foreignValue = (string) $foreignValue;
+			}
+
 			if(json_encode($localValue) !== json_encode($foreignValue)) {
 				$diff[$key] = ['local' => $localValue, 'foreign' => $foreignValue];
 			}
