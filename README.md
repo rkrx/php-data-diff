@@ -18,9 +18,9 @@ This component is interesting for you, if you have a lot of structured data to i
 
 ## Usage
 
-In the beginning, you have two two-dimensional data-lists you want to compare. Normally, some of the columns of such a datalist are subjected to tell, what the actual difference in terms of added and missing rows is. And some columns tell, that only changes to existing rows have happened. You could also have columns, that would not cause any action, but their data will be needed in the subsequent processing.
+In the beginning, you have two two-dimensional data-lists you want to compare. Normally, some of the columns of such a datalist are subjected to tell, what the actual difference in terms of new and missing rows is. And some columns tell, that changes in existing rows have been found. You could also have columns, that would not cause any action, but their data could be needed in the subsequent processing.
 
-Let's say, you have some article meta-data that should be imported from an external data source and you have that article-data in a local database. The external data should be imported into that local database and you want to act on (e.g. logging), whenever a dataset was added, removed or changed:
+Let's say, you have some article meta-data that could be taken from an external data source and you would like to have that data in a local database. The external data should be imported into that local database and you want to act on, whenever a dataset was added, removed or changed (e.g. logging):
 
 External Data:
 
@@ -40,9 +40,9 @@ A Hairdryer;C0001;49.95;12
 A Pencil;D0001;2.95;2481
 ```
 
-In each list, we have three data-rows here. But in each list you have a row, that is not available in the other list and the only common rows (`A Hairdryer;C0001` and `A Pencil;D0001`) have some differences in columns `price` and `stock` while the `name` is equal in both lists. Whatever is in the column `current-datetime` should not be compared, but in case of an insertion or an update it should be considered as well. The final goal is to bring all the changes from the external data-source to the local database. _It could be important to know that a `current-datetime` has changed while all other columns remain unchanged, but in this case I want to show how to handle a case, were this is not important._
+In each list, we have three data-rows. But in both lists you have a row, that is not available in the other list and the only common rows (`A Hairdryer;C0001` and `A Pencil;D0001`) have some differences in columns `price` and `stock` while the `name` is equal in both lists. Whatever is in the column `current-datetime` should not be compared, but in case of an insertion or an update it should be considered as well. The final goal is to bring all the changes from the external data-source to the local database. _It could be important to know that a `current-datetime` has changed while all other columns remain unchanged, but in this case I want to show how to handle a case, were this is not important._
 
-An actual compare-result is computed comparing two distinct key-value lists. A comparison is made through three methods that could find added keys, missing keys and changed data where keys are equal. So, in order to get this information, you need to get an idea of how to say, that a particular row was added, removed or changed. This is not always a clear task and is subject to the data in question. In this example, I will set some rules that _could_ be different in your scenario.
+An actual compare-result is computed comparing two distinct key-value lists. A comparison is made through three methods that could find added keys, missing keys and changed data where keys are equal. So, in order to get this information, you need to get an idea of how to say, that a particular row was added, removed or changed. This is not always a clear task and is subject to the data in question. In this example, I will set some rules those _could_ be different in your scenario.
 
 In this example, we will only consider the `reference` to tell if a row is new in a list, or has been removed. So, the local database has a `reference` to a article `A0001` that is not included in the external data. Because of that, we want to remove `A0001` from our local data because of this. `B0001` is not present in our local data, so it should be added. The _Hairdryer_ has a different stock and the _Pencil_ has a slightly different price. Since, we locally store our prices with a decimal precision of two, the two pencil-prices are actually equal and the comparison should not report a change to the row `D0001`.
 
