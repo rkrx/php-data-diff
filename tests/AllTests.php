@@ -16,14 +16,15 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 			'client_id' => 'INT',
 			'description' => 'STRING',
 			'total' => 'MONEY',
+			'a' => 'INT',
 		]);
 
 		for($i=2; $i <= 501; $i++) {
-			$row = ['client_id' => $i, 'description' => 'Dies ist ein Test', 'total' => $i === 50 ? 60 : 59.98999, 'test' => $i % 2];
+			$row = ['client_id' => $i, 'description' => 'Dies ist ein Test', 'total' => $i === 50 ? 60 : 59.98999, 'a' => null, 'test' => $i % 2];
 			$this->ds->storeA()->addRow($row);
 		}
 		for($i=1; $i <= 500; $i++) {
-			$row = ['client_id' => $i, 'description' => 'Dies ist ein Test', 'total' => 59.98999, 'test' => $i % 3];
+			$row = ['client_id' => $i, 'description' => 'Dies ist ein Test', 'total' => 59.98999, 'a' => null, 'test' => $i % 3];
 			$this->ds->storeB()->addRow($row);
 		}
 	}
@@ -41,6 +42,14 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 
 	/**
 	 */
+	public function testNewStringRepresentation() {
+		foreach($this->ds->storeA()->getNew() as $row) {
+			$this->assertEquals('New client_id: 501 (client_id: 501, description: "Dies ist ein Test", total: 59.98999, a: null)', (string) $row);
+		}
+	}
+
+	/**
+	 */
 	public function testChanges() {
 		$res = $this->ds->storeA()->getChanged();
 		foreach($res as $key => $value) {
@@ -52,6 +61,14 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 
 	/**
 	 */
+	public function testChangeStringRepresentation() {
+		foreach($this->ds->storeA()->getChanged() as $row) {
+			$this->assertEquals('Changed client_id: 50 => total: 59.99 -> 60.00', (string) $row);
+		}
+	}
+
+	/**
+	 */
 	public function testMissing() {
 		$res = $this->ds->storeA()->getMissing();
 		foreach($res as $key => $value) {
@@ -59,6 +76,14 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 			return;
 		}
 		$this->assertTrue(false);
+	}
+
+	/**
+	 */
+	public function testMissingStringRepresentation() {
+		foreach($this->ds->storeA()->getMissing() as $row) {
+			$this->assertEquals('Missing client_id: 1 (client_id: 1, description: "Dies ist ein Test", total: 59.98999, a: null)', (string) $row);
+		}
 	}
 
 	/**

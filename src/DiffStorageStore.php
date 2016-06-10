@@ -373,9 +373,11 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	private function formatKeyValuePairs($keyValues) {
 		$keyParts = [];
 		foreach($keyValues as $key => $value) {
-			$value = preg_replace('/\\s+/', ' ', $value);
-			if(strlen($value) > 20) {
-				$value = substr($value, 0, 16) . ' ...';
+			if(is_string($value)) {
+				$value = preg_replace('/\\s+/', ' ', $value);
+				if(strlen($value) > 20) {
+					$value = substr($value, 0, 16) . ' ...';
+				}
 			}
 			$keyParts[] = sprintf("%s: %s", $key, json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 		}
