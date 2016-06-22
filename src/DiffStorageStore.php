@@ -5,6 +5,7 @@ use Generator;
 use JsonSerializable;
 use PDO;
 use PDOStatement;
+use stdClass;
 use Traversable;
 
 class DiffStorageStore implements DiffStorageStoreInterface {
@@ -105,7 +106,9 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 */
 	public function addRows($rows, array $translation = null, $duplicateKeyHandler = null) {
 		foreach($rows as $row) {
-			if($row instanceof JsonSerializable) {
+			if($row instanceof stdClass) {
+				$row = (array) $row;
+			} elseif($row instanceof JsonSerializable) {
 				$row = $row->jsonSerialize();
 			}
 			$this->addRow($row, $translation, $duplicateKeyHandler);

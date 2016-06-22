@@ -1,6 +1,8 @@
 <?php
 namespace DataDiff;
 
+use DataDiff\Helpers\JsonSerializeTestObj;
+
 class AllTests extends \PHPUnit_Framework_TestCase {
 	/** @var MemoryDiffStorage */
 	private $ds = null;
@@ -250,6 +252,42 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 			return;
 		}
 		$this->assertTrue(false);
+	}
+
+	/**
+	 */
+	public function testStdClass() {
+		$ds = new MemoryDiffStorage([
+			'key' => 'INT',
+		], [
+			'value' => 'STRING',
+		]);
+		$srcData = [
+			['key' => 1, 'value' => 'TEST1'],
+			['key' => 2, 'value' => 'TEST2'],
+			['key' => 3, 'value' => 'TEST3']
+		];
+		$ds->storeA()->addRows(array_map(function ($entry) { return (object) $entry; }, $srcData));
+		$data = iterator_to_array($ds->storeA());
+		$this->assertEquals($srcData, $data);
+	}
+
+	/**
+	 */
+	public function testJsonSerialize() {
+		$ds = new MemoryDiffStorage([
+			'key' => 'INT',
+		], [
+			'value' => 'STRING',
+		]);
+		$srcData = [
+			['key' => 1, 'value' => 'TEST1'],
+			['key' => 2, 'value' => 'TEST2'],
+			['key' => 3, 'value' => 'TEST3']
+		];
+		$ds->storeA()->addRows(array_map(function ($entry) { return new JsonSerializeTestObj($entry); }, $srcData));
+		$data = iterator_to_array($ds->storeA());
+		$this->assertEquals($srcData, $data);
 	}
 }
 
