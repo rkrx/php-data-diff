@@ -2,6 +2,7 @@
 namespace DataDiff;
 
 use Generator;
+use JsonSerializable;
 use PDO;
 use PDOStatement;
 use Traversable;
@@ -67,14 +68,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 		if($duplicateKeyHandler === null) {
 			$duplicateKeyHandler = $this->duplicateKeyHandler;
 		}
-		$buildMetaData = function (array $data, array $keys) {
-			$metaData = $data;
-			$metaData = array_diff_key($metaData, array_diff_key($metaData, $keys));
-			$metaData['___data'] = json_encode($data);
-			$metaData['___sort'] = $this->counter;
-			return $metaData;
-		};
-		$metaData = $buildMetaData($data, $this->converter);
+		$metaData = $this->buildMetaData($data);
 		if($duplicateKeyHandler === null) {
 			$this->replaceStmt->execute($metaData);
 		} else {
@@ -82,7 +76,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 				$this->insertStmt->execute($metaData);
 			} catch (\PDOException $e) {
 				if(strpos($e->getMessage(), 'UNIQUE constraint failed') !== false) {
-					$metaData = $buildMetaData($data, $this->converter);
+					$metaData = $this->buildMetaData($data);
 					unset($metaData['___data']);
 					unset($metaData['___sort']);
 					$this->selectStmt->execute($metaData);
@@ -93,7 +87,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 						$oldData = json_decode($oldData, true);
 					}
 					$data = $duplicateKeyHandler($data, $oldData);
-					$metaData = $buildMetaData($data, $this->converter);
+					$metaData = $this->buildMetaData($data);
 					unset($metaData['___sort']);
 					$this->updateStmt->execute($metaData);
 				} else {
@@ -111,6 +105,9 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 */
 	public function addRows($rows, array $translation = null, $duplicateKeyHandler = null) {
 		foreach($rows as $row) {
+			if($row instanceof JsonSerializable) {
+				$row = $row->jsonSerialize();
+			}
 			$this->addRow($row, $translation, $duplicateKeyHandler);
 		}
 		return $this;
@@ -382,5 +379,17 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 			$keyParts[] = sprintf("%s: %s", $key, json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 		}
 		return join(', ', $keyParts);
+	}
+
+	/**
+	 * @param array $data
+	 * @return array
+	 */
+	private function buildMetaData(array $data) {
+		$metaData = $data;
+		$metaData = array_diff_key($metaData, array_diff_key($metaData, $this->converter));
+		$metaData['___data'] = json_encode($data);
+		$metaData['___sort'] = $this->counter;
+		return $metaData;
 	}
 }
