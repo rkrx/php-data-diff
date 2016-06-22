@@ -99,7 +99,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @param Traversable|array $rows
+	 * @param Traversable|array[]|object[] $rows
 	 * @param array $translation
 	 * @param callable $duplicateKeyHandler
 	 * @return $this
