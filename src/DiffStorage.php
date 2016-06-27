@@ -90,6 +90,7 @@ abstract class DiffStorage implements DiffStorageInterface {
 					$def[] = sprintf('CASE WHEN CAST(:'.$name.' AS INT) = 0 THEN \'false\' ELSE \'true\' END');
 					break;
 				case 'INT':
+				case 'INTEGER':
 					$def[] = 'printf("%d", :'.$name.')';
 					break;
 				case 'FLOAT':
@@ -101,6 +102,7 @@ abstract class DiffStorage implements DiffStorageInterface {
 				case 'MONEY':
 					$def[] = 'printf("%0.2f", :'.$name.')';
 					break;
+				case 'STR':
 				case 'STRING':
 					$def[] = '\'"\'||HEX(TRIM(:'.$name.'))||\'"\'';
 					break;
@@ -130,6 +132,7 @@ abstract class DiffStorage implements DiffStorageInterface {
 					$def[$name] = 'boolval';
 					break;
 				case 'INT':
+				case 'INTEGER':
 					$def[$name] = 'intval';
 					break;
 				case 'FLOAT':
@@ -141,6 +144,7 @@ abstract class DiffStorage implements DiffStorageInterface {
 				case 'MONEY':
 					$def[$name] = function ($value) { return number_format((float) $value, 2, '.', ''); };
 					break;
+				case 'STR':
 				case 'STRING':
 					$def[$name] = function ($value) { return (string) $value; };
 					break;
