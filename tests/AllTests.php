@@ -298,7 +298,7 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 		new MemoryDiffStorage([
 			'key' => 'INT',
 		], [
-			'a' => 'INTEGER',
+			'a' => 'INTEGR',
 			'b' => 'STRING',
 		]);
 	}
