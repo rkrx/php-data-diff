@@ -2,6 +2,7 @@
 namespace DataDiff;
 
 use DataDiff\Exceptions\EmptySchemaException;
+use DataDiff\Exceptions\InvalidSchemaException;
 use Exception;
 use PDO;
 
@@ -78,7 +79,8 @@ abstract class DiffStorage implements DiffStorageInterface {
 	/**
 	 * @param array $schema
 	 * @return string
-	 * @throws Exception
+	 * @throws EmptySchemaException
+	 * @throws InvalidSchemaException
 	 */
 	private function buildSchema($schema) {
 		$def = [];
@@ -105,6 +107,8 @@ abstract class DiffStorage implements DiffStorageInterface {
 				case 'MD5':
 					$def[] = '\'"\'||md5(:'.$name.')||\'"\'';
 					break;
+				default:
+					throw new InvalidSchemaException("Invalid type: {$type}");
 			}
 		}
 		if(!count($def)) {
@@ -116,7 +120,7 @@ abstract class DiffStorage implements DiffStorageInterface {
 	/**
 	 * @param array $schema
 	 * @return array
-	 * @throws Exception
+	 * @throws InvalidSchemaException
 	 */
 	private function buildConverter($schema) {
 		$def = [];
@@ -143,6 +147,8 @@ abstract class DiffStorage implements DiffStorageInterface {
 				case 'MD5':
 					$def[$name] = function ($value) { return md5((string) $value); };
 					break;
+				default:
+					throw new InvalidSchemaException("Invalid type: {$type}");
 			}
 		}
 		return $def;

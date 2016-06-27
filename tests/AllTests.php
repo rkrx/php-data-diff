@@ -1,6 +1,7 @@
 <?php
 namespace DataDiff;
 
+use DataDiff\Exceptions\InvalidSchemaException;
 use DataDiff\Helpers\JsonSerializeTestObj;
 
 class AllTests extends \PHPUnit_Framework_TestCase {
@@ -288,6 +289,18 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 		$ds->storeA()->addRows(array_map(function ($entry) { return new JsonSerializeTestObj($entry); }, $srcData));
 		$data = iterator_to_array($ds->storeA());
 		$this->assertEquals($srcData, $data);
+	}
+
+	/**
+	 */
+	public function testFalsySchema() {
+		$this->setExpectedException("DataDiff\\Exceptions\\InvalidSchemaException");
+		new MemoryDiffStorage([
+			'key' => 'INT',
+		], [
+			'a' => 'INTEGER',
+			'b' => 'STRING',
+		]);
 	}
 }
 
