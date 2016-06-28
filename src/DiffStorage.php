@@ -87,6 +87,7 @@ abstract class DiffStorage implements DiffStorageInterface {
 		foreach($schema as $name => $type) {
 			switch ($type) {
 				case 'BOOL':
+				case 'BOOLEAN':
 					$def[] = sprintf('CASE WHEN CAST(:'.$name.' AS INT) = 0 THEN \'false\' ELSE \'true\' END');
 					break;
 				case 'INT':
@@ -129,6 +130,7 @@ abstract class DiffStorage implements DiffStorageInterface {
 		foreach($schema as $name => $type) {
 			switch ($type) {
 				case 'BOOL':
+				case 'BOOLEAN':
 					$def[$name] = 'boolval';
 					break;
 				case 'INT':
