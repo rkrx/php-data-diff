@@ -76,7 +76,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 			try {
 				$this->insertStmt->execute($metaData);
 			} catch (\PDOException $e) {
-				if(strpos($e->getMessage(), 'UNIQUE constraint failed') !== false) {
+				if(strpos($e->getMessage(), 'SQLSTATE[23000]') !== false) {
 					$metaData = $this->buildMetaData($data);
 					unset($metaData['___data']);
 					unset($metaData['___sort']);

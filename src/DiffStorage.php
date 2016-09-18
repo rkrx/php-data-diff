@@ -229,9 +229,7 @@ abstract class DiffStorage implements DiffStorageInterface {
 			$options['dsn'] = 'sqlite::memory:';
 		}
 		if(!array_key_exists('duplicate_key_handler', $options)) {
-			$options['duplicate_key_handler'] = function (array $newData = null, array $oldData = null) {
-				return array_merge($oldData, $newData);
-			};
+			$options['duplicate_key_handler'] = null;
 		}
 		return $options;
 	}
