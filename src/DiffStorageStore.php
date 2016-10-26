@@ -361,19 +361,20 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 * @return string
 	 */
 	private function formatMissingRow(DiffStorageStoreRowInterface $row) {
-		$keys = $this->formatKeyValuePairs($row->getForeign()->getKeyData());
+		$keys = $this->formatKeyValuePairs($row->getForeign()->getKeyData(), false);
 		$values = $this->formatKeyValuePairs($row->getForeign()->getValueData());
 		return sprintf("Missing %s (%s)", $keys, $values);
 	}
-
+	
 	/**
 	 * @param array $keyValues
+	 * @param bool $shortenLongValues
 	 * @return string
 	 */
-	private function formatKeyValuePairs($keyValues) {
+	private function formatKeyValuePairs($keyValues, $shortenLongValues = true) {
 		$keyParts = [];
 		foreach($keyValues as $key => $value) {
-			if(is_string($value)) {
+			if(is_string($value) && $shortenLongValues) {
 				$value = preg_replace('/\\s+/', ' ', $value);
 				if(strlen($value) > 20) {
 					$value = substr($value, 0, 16) . ' ...';
