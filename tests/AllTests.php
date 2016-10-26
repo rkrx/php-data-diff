@@ -182,6 +182,24 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 
 	/**
 	 */
+	public function testRowStringRepresentation() {
+		$ds = new MemoryDiffStorage([
+			'key' => 'STRING',
+		], [
+			'value' => 'STRING',
+		]);
+
+		$ds->storeA()->addRow(['key' => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'value' => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ']);
+
+		foreach($ds->storeA()->getNew() as $row) {
+			$this->assertEquals('New key: "ABCDEFGHIJKLMNOPQRSTUVWXYZ" (value: "ABCDEFGHIJKLMNOP ...")', (string) $row);
+			return;
+		}
+		$this->assertTrue(false);
+	}
+
+	/**
+	 */
 	public function testCount() {
 		$ds = new MemoryDiffStorage([
 			'key' => 'INT',

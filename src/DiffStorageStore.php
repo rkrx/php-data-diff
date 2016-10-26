@@ -340,7 +340,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 * @return string
 	 */
 	private function formatNewRow(DiffStorageStoreRowInterface $row) {
-		$keys = $this->formatKeyValuePairs($row->getLocal()->getKeyData());
+		$keys = $this->formatKeyValuePairs($row->getLocal()->getKeyData(), false);
 		$values = $this->formatKeyValuePairs($row->getLocal()->getValueData());
 		return sprintf("New %s (%s)", $keys, $values);
 	}
@@ -350,7 +350,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 * @return string
 	 */
 	private function formatChangedRow(DiffStorageStoreRowInterface $row) {
-		$keys = $this->formatKeyValuePairs($row->getLocal()->getKeyData());
+		$keys = $this->formatKeyValuePairs($row->getLocal()->getKeyData(), false);
 		$values = $row->getForeign()->getValueData();
 		$valueKeys = array_keys($values);
 		return sprintf("Changed %s => %s", $keys, $row->getDiffFormatted($valueKeys));
