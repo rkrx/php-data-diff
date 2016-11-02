@@ -192,7 +192,7 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 		$ds->storeA()->addRow(['key' => 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr', 'value' => 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr']);
 
 		foreach($ds->storeA()->getNew() as $row) {
-			$this->assertEquals('New key: "Lorem ipsum dolor sit amet, consetetur sadipscing elitr" (value: "Lorem ipsum dolor sit amet, consetetur sadipscing elitr")', (string) $row);
+			$this->assertEquals('New key: "Lorem ipsum dolor sit amet, consetetur sadipscing elitr" (value: "Lorem ipsum do...adipscing elitr")', (string) $row);
 			return;
 		}
 		$this->assertTrue(false);
