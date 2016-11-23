@@ -1,7 +1,6 @@
 <?php
 namespace DataDiff;
 
-use DataDiff\Exceptions\InvalidSchemaException;
 use DataDiff\Helpers\JsonSerializeTestObj;
 
 class AllTests extends \PHPUnit_Framework_TestCase {
@@ -14,12 +13,12 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 		parent::setUp();
 
 		$this->ds = new MemoryDiffStorage([
-			'client_id' => 'INT',
+			'client_id' => MemoryDiffStorage::INT,
 		], [
-			'client_id' => 'INT',
-			'description' => 'STRING',
-			'total' => 'MONEY',
-			'a' => 'INT',
+			'client_id' => MemoryDiffStorage::INT,
+			'description' => MemoryDiffStorage::STR,
+			'total' => MemoryDiffStorage::MONEY,
+			'a' => MemoryDiffStorage::INT,
 		]);
 
 		for($i=2; $i <= 501; $i++) {
@@ -93,7 +92,7 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testHasAnyChnges() {
 		$this->assertTrue($this->ds->storeB()->hasAnyChanges());
-		$emptyDs = new MemoryDiffStorage(['key' => 'INT'], ['val' => 'INT']);
+		$emptyDs = new MemoryDiffStorage(['key' => MemoryDiffStorage::INT], ['val' => MemoryDiffStorage::INT]);
 		$this->assertFalse($emptyDs->storeB()->hasAnyChanges());
 	}
 
@@ -101,9 +100,9 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testDuplicateBehavior() {
 		$ds = new MemoryDiffStorage([
-			'key' => 'INT',
+			'key' => MemoryDiffStorage::INT,
 		], [
-			'value' => 'INT',
+			'value' => MemoryDiffStorage::INT,
 		]);
 
 		$ds->storeA()->addRow(['key' => 10, 'value' => 20]);
@@ -121,9 +120,9 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testDuplicateKeyHandlerBehavior() {
 		$ds = new MemoryDiffStorage([
-			'key' => 'INT',
+			'key' => MemoryDiffStorage::INT,
 		], [
-			'value' => 'INT',
+			'value' => MemoryDiffStorage::INT,
 		], [
 			'duplicate_key_handler' => function (array $newData, array $oldData) {
 				$newData['value'] = $newData['value'] + $oldData['value'];
@@ -146,9 +145,9 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testMD5() {
 		$ds = new MemoryDiffStorage([
-			'key' => 'INT',
+			'key' => MemoryDiffStorage::INT,
 		], [
-			'value' => 'MD5',
+			'value' => MemoryDiffStorage::MD5,
 		]);
 
 		$ds->storeA()->addRow(['key' => 10, 'value' => 'Hello World']);
@@ -165,9 +164,9 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testTranslation() {
 		$ds = new MemoryDiffStorage([
-			'key' => 'INT',
+			'key' => MemoryDiffStorage::INT,
 		], [
-			'value' => 'MD5',
+			'value' => MemoryDiffStorage::MD5,
 		]);
 
 		$ds->storeA()->addRow(['id' => 10, 'greeting' => 'Hello World'], ['id' => 'key', 'greeting' => 'value']);
@@ -184,9 +183,9 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testRowStringRepresentation() {
 		$ds = new MemoryDiffStorage([
-			'key' => 'STRING',
+			'key' => MemoryDiffStorage::STR,
 		], [
-			'value' => 'STRING',
+			'value' => MemoryDiffStorage::STR,
 		]);
 
 		$ds->storeA()->addRow(['key' => 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr', 'value' => 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr']);
@@ -202,9 +201,9 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testCount() {
 		$ds = new MemoryDiffStorage([
-			'key' => 'INT',
+			'key' => MemoryDiffStorage::INT,
 		], [
-			'value' => 'MD5',
+			'value' => MemoryDiffStorage::MD5,
 		]);
 
 		for($i=1; $i<=100; $i++) {
@@ -219,11 +218,11 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testGetDataOptionKeys() {
 		$ds = new MemoryDiffStorage([
-			'key' => 'INT',
+			'key' => MemoryDiffStorage::INT,
 		], [
-			'a' => 'STRING',
-			'b' => 'STRING',
-			'c' => 'STRING',
+			'a' => MemoryDiffStorage::STR,
+			'b' => MemoryDiffStorage::STR,
+			'c' => MemoryDiffStorage::STR,
 		]);
 		$ds->storeA()->addRow(['key' => 1, 'a' => 1, 'b' => 2, 'c' => 3]);
 		$rows = $ds->storeA()->getNew();
@@ -238,11 +237,11 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testGetDataOptionIgnore() {
 		$ds = new MemoryDiffStorage([
-			'key' => 'INT',
+			'key' => MemoryDiffStorage::INT,
 		], [
-			'a' => 'STRING',
-			'b' => 'STRING',
-			'c' => 'STRING',
+			'a' => MemoryDiffStorage::STR,
+			'b' => MemoryDiffStorage::STR,
+			'c' => MemoryDiffStorage::STR,
 		]);
 		$ds->storeA()->addRow(['key' => 1, 'a' => 1, 'b' => 2, 'c' => 3]);
 		$rows = $ds->storeA()->getNew();
@@ -257,11 +256,11 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testLocalData() {
 		$ds = new MemoryDiffStorage([
-			'key' => 'INT',
+			'key' => MemoryDiffStorage::INT,
 		], [
-			'a' => 'STRING',
-			'b' => 'STRING',
-			'c' => 'STRING',
+			'a' => MemoryDiffStorage::STR,
+			'b' => MemoryDiffStorage::STR,
+			'c' => MemoryDiffStorage::STR,
 		]);
 		$ds->storeA()->addRow(['key' => 1, 'a' => 1, 'b' => 2, 'c' => 3]);
 		$rows = $ds->storeA()->getNew();
@@ -277,9 +276,9 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testStdClass() {
 		$ds = new MemoryDiffStorage([
-			'key' => 'INT',
+			'key' => MemoryDiffStorage::INT,
 		], [
-			'value' => 'STRING',
+			'value' => MemoryDiffStorage::STR,
 		]);
 		$srcData = [
 			['key' => 1, 'value' => 'TEST1'],
@@ -295,9 +294,9 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testJsonSerialize() {
 		$ds = new MemoryDiffStorage([
-			'key' => 'INT',
+			'key' => MemoryDiffStorage::INT,
 		], [
-			'value' => 'STRING',
+			'value' => MemoryDiffStorage::STR,
 		]);
 		$srcData = [
 			['key' => 1, 'value' => 'TEST1'],
@@ -314,10 +313,10 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 	public function testFalsySchema() {
 		$this->setExpectedException("DataDiff\\Exceptions\\InvalidSchemaException");
 		new MemoryDiffStorage([
-			'key' => 'INT',
+			'key' => MemoryDiffStorage::INT,
 		], [
 			'a' => 'INTEGR',
-			'b' => 'STRING',
+			'b' => MemoryDiffStorage::STR,
 		]);
 	}
 }
