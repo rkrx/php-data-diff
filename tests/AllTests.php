@@ -118,6 +118,31 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 
 	/**
 	 */
+	public function testGetArguments() {
+		$ds = new MemoryDiffStorage([
+			'key' => MemoryDiffStorage::INT,
+		], [
+			'value' => MemoryDiffStorage::INT,
+		]);
+
+		for($i = 0; $i < 100; $i++) {
+			$ds->storeA()->addRow(['key' => $i, 'value' => $i]);
+			$ds->storeB()->addRow(['key' => $i * 2, 'value' => $i]);
+		}
+		
+		$this->assertCount(50, iterator_to_array($ds->storeB()->getNew()));
+		$this->assertCount(49, iterator_to_array($ds->storeB()->getChanged()));
+		$this->assertCount(99, iterator_to_array($ds->storeB()->getNewOrChanged()));
+		$this->assertCount(50, iterator_to_array($ds->storeB()->getMissing()));
+		
+		$this->assertCount(10, iterator_to_array($ds->storeB()->getNew(['limit' => 10])));
+		$this->assertCount(10, iterator_to_array($ds->storeB()->getChanged(['limit' => 10])));
+		$this->assertCount(10, iterator_to_array($ds->storeB()->getNewOrChanged(['limit' => 10])));
+		$this->assertCount(10, iterator_to_array($ds->storeB()->getMissing(['limit' => 10])));
+	}
+
+	/**
+	 */
 	public function testDuplicateKeyHandlerBehavior() {
 		$ds = new MemoryDiffStorage([
 			'key' => MemoryDiffStorage::INT,

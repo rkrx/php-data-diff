@@ -26,32 +26,36 @@ interface DiffStorageStoreInterface extends Countable, IteratorAggregate {
 	 * Returns true whenever there is any changed, added or removed data available
 	 */
 	public function hasAnyChanges();
-
+	
 	/**
 	 * Get all rows, that are present in this store, but not in the other
 	 *
-	 * @return Generator|DiffStorageStoreRow[]
+	 * @param array $arguments
+	 * @return DiffStorageStoreRow[]|Generator
 	 */
-	public function getNew();
-
+	public function getNew(array $arguments = []);
+	
 	/**
 	 * Get all rows, that have a different value hash in the other store
 	 *
-	 * @return Generator|DiffStorageStoreRow[]
+	 * @param array $arguments
+	 * @return DiffStorageStoreRow[]|Generator
 	 */
-	public function getChanged();
-
+	public function getChanged(array $arguments = []);
+	
 	/**
-	 * @return Generator|DiffStorageStoreRow[]
+	 * @param array $arguments
+	 * @return DiffStorageStoreRow[]|Generator
 	 */
-	public function getNewOrChanged();
-
+	public function getNewOrChanged(array $arguments = []);
+	
 	/**
 	 * Get all rows, that are present in the other store, but not in this
 	 *
-	 * @return Generator|DiffStorageStoreRow[]
+	 * @param array $arguments
+	 * @return DiffStorageStoreRow[]|Generator
 	 */
-	public function getMissing();
+	public function getMissing(array $arguments = []);
 
 	/**
 	 * @return $this

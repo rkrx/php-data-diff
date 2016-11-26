@@ -130,14 +130,16 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 		}
 		return false;
 	}
-
+	
 	/**
 	 * Get all rows, that are present in this store, but not in the other
 	 *
-	 * @return Generator|DiffStorageStoreRow[]
+	 * @param array $arguments
+	 * @return DiffStorageStoreRow[]|Generator
 	 */
-	public function getNew() {
-		return $this->query('
+	public function getNew(array $arguments = []) {
+		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
+		return $this->query("
 			SELECT
 				s1.s_key AS k,
 				s1.s_data AS d,
@@ -152,18 +154,21 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 				s2.s_ab IS NULL
 			ORDER BY
 				s1.s_sort
-		', function (DiffStorageStoreRowInterface $row) {
+			{$limit}
+		", function (DiffStorageStoreRowInterface $row) {
 			return $this->formatNewRow($row);
 		});
 	}
-
+	
 	/**
 	 * Get all rows, that have a different value hash in the other store
 	 *
-	 * @return Generator|DiffStorageStoreRow[]
+	 * @param array $arguments
+	 * @return DiffStorageStoreRow[]|Generator
 	 */
-	public function getChanged() {
-		return $this->query('
+	public function getChanged(array $arguments = []) {
+		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
+		return $this->query("
 			SELECT
 				s1.s_key AS k,
 				s1.s_data AS d,
@@ -178,16 +183,19 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 				s1.s_value != s2.s_value
 			ORDER BY
 				s1.s_sort
-		', function (DiffStorageStoreRowInterface $row) {
+			{$limit}	
+		", function (DiffStorageStoreRowInterface $row) {
 			return $this->formatChangedRow($row);
 		});
 	}
-
+	
 	/**
-	 * @return Generator|DiffStorageStoreRow[]
+	 * @param array $arguments
+	 * @return DiffStorageStoreRow[]|Generator
 	 */
-	public function getNewOrChanged() {
-		return $this->query('
+	public function getNewOrChanged(array $arguments = []) {
+		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
+		return $this->query("
 			SELECT
 				s1.s_key AS k,
 				s1.s_data AS d,
@@ -202,7 +210,8 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 				((s2.s_ab IS NULL) OR (s1.s_value != s2.s_value))
 			ORDER BY
 				s1.s_sort
-		', function (DiffStorageStoreRowInterface $row) {
+			{$limit}	
+		", function (DiffStorageStoreRowInterface $row) {
 			if(count($row->getForeign()->getValueData())) {
 				return $this->formatChangedRow($row);
 			} else {
@@ -210,14 +219,16 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 			}
 		});
 	}
-
+	
 	/**
 	 * Get all rows, that are present in the other store, but not in this
 	 *
-	 * @return Generator|DiffStorageStoreRow[]
+	 * @param array $arguments
+	 * @return DiffStorageStoreRow[]|Generator
 	 */
-	public function getMissing() {
-		return $this->query('
+	public function getMissing(array $arguments = []) {
+		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
+		return $this->query("
 			SELECT
 				s1.s_key AS k,
 				s2.s_data AS d,
@@ -232,7 +243,8 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 				s2.s_ab IS NULL
 			ORDER BY
 				s1.s_sort
-		', function (DiffStorageStoreRowInterface $row) {
+			{$limit}	
+		", function (DiffStorageStoreRowInterface $row) {
 			return $this->formatMissingRow($row);
 		});
 	}
