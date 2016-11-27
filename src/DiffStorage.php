@@ -138,17 +138,17 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 					$def[$name] = 'intval';
 					break;
 				case 'FLOAT':
-					$def[$name] = function ($value) { return number_format((float) $value, 6, '.', ''); };
+					$def[$name] = function ($value) { return $value !== null ? (float) number_format((float) $value, 6, '.', '') : null; };
 					break;
 				case 'DOUBLE':
-					$def[$name] = function ($value) { return number_format((float) $value, 12, '.', ''); };
+					$def[$name] = function ($value) { return $value !== null ? (double) number_format((double) $value, 12, '.', '') : null; };
 					break;
 				case 'MONEY':
-					$def[$name] = function ($value) { return number_format((float) $value, 2, '.', ''); };
+					$def[$name] = function ($value) { return $value !== null ? (float) number_format((float) $value, 2, '.', '') : null; };
 					break;
 				case 'STR':
 				case 'STRING':
-					$def[$name] = function ($value) { return (string) $value; };
+					$def[$name] = function ($value) { return $value !== null ? (string) $value : null; };
 					break;
 				case 'MD5':
 					$def[$name] = function ($value) { return md5((string) $value); };

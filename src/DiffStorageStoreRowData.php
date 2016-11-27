@@ -1,6 +1,7 @@
 <?php
 namespace DataDiff;
 
+use DataDiff\Tools\StringShortener;
 use Exception;
 
 class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
@@ -91,15 +92,10 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 			$localValue = call_user_func($conv, $formattedLocalRow);
 			$foreignValue = call_user_func($conv, $formattedForeignRow);
 
-			if(is_scalar($localValue)) {
-				$localValue = (string) $localValue;
-			}
+			$jsonLocalValue = is_scalar($localValue) ? (string) $localValue : $localValue;
+			$jsonRemoteValue = is_scalar($foreignValue) ? (string) $foreignValue : $foreignValue;
 
-			if(is_scalar($foreignValue)) {
-				$foreignValue = (string) $foreignValue;
-			}
-
-			if(json_encode($localValue) !== json_encode($foreignValue)) {
+			if(json_encode($jsonLocalValue) !== json_encode($jsonRemoteValue)) {
 				$diff[$key] = ['local' => $localValue, 'foreign' => $foreignValue];
 			}
 		}
@@ -117,11 +113,10 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 		if($format === null) {
 			$result = [];
 			$formatVal = function ($value) {
-				$value = preg_replace('/\\s+/', ' ', $value);
-				if(strlen($value) > 20) {
-					$value = substr($value, 0, 16) . ' ...';
+				if(is_string($value)) {
+					$value = StringShortener::shorten($value);
 				}
-				return $value;
+				return json_encode($value, JSON_UNESCAPED_SLASHES);
 			};
 			foreach($diff as $fieldName => $values) {
 				$foreignValue = $formatVal($values['foreign']);

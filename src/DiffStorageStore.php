@@ -1,6 +1,7 @@
 <?php
 namespace DataDiff;
 
+use DataDiff\Tools\StringShortener;
 use Generator;
 use JsonSerializable;
 use PDO;
@@ -387,15 +388,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 		$keyParts = [];
 		foreach($keyValues as $key => $value) {
 			if(is_string($value) && $shortenLongValues) {
-				$value = preg_replace('/\\s+/', ' ', $value);
-				$arr = preg_split('/(?!^)(?=.)/u', $value);
-				$maxLength = 32;
-				if(count($arr) > $maxLength) {
-					$length = $maxLength - 3;
-					$partALength = floor($length / 2);
-					$partBLength = ceil($length / 2);
-					$value = join('', array_slice($arr, 0, $partALength)) . '...' . join('', array_slice($arr, -$partBLength));
-				}
+				$value = StringShortener::shorten($value);
 			}
 			$keyParts[] = sprintf("%s: %s", $key, json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 		}

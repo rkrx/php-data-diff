@@ -48,6 +48,12 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 		foreach($this->ds->storeA()->getNew() as $row) {
 			$this->assertEquals('New client_id: 501 (client_id: 501, description: "Dies ist ein Test", total: 59.98999, a: null)', (string) $row);
 		}
+		$ds = new MemoryDiffStorage(['a' => 'STRING'], ['b' => 'STRING']);
+		$ds->storeA()->addRow(['a' => 1, 'b' => '0']);
+		$ds->storeB()->addRow(['a' => 1, 'b' => null]);
+		foreach($ds->storeB()->getChanged() as $row) {
+			$this->assertEquals('Changed a: 1 => b: "0" -> null', (string) $row);
+		}
 	}
 
 	/**
@@ -65,7 +71,7 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testChangeStringRepresentation() {
 		foreach($this->ds->storeA()->getChanged() as $row) {
-			$this->assertEquals('Changed client_id: 50 => total: 59.99 -> 60.00', (string) $row);
+			$this->assertEquals('Changed client_id: 50 => total: 59.99 -> 60', (string) $row);
 		}
 	}
 
