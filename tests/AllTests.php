@@ -104,6 +104,30 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 
 	/**
 	 */
+	public function testGetData() {
+		$ds = new MemoryDiffStorage(['a' => MemoryDiffStorage::INT], ['b' => MemoryDiffStorage::INT]);
+		$ds->storeA()->addRow(['a' => 1, 'b' => 1, 'c' => 1]);
+		$ds->storeA()->addRow(['a' => 2, 'b' => 2, 'c' => 1]);
+		$ds->storeA()->addRow(['a' => 3, 'b' => 1, 'c' => 2]);
+		$ds->storeB()->addRow(['a' => 1, 'b' => 1, 'c' => 1]);
+		$ds->storeB()->addRow(['a' => 2, 'b' => 2, 'c' => 2]);
+		$ds->storeB()->addRow(['a' => 3, 'b' => 2, 'c' => 1]);
+		foreach($ds->storeB()->getChanged() as $row) {
+			$this->assertEquals(['a' => 3, 'b' => 2, 'c' => 1], $row->getData());
+		}
+		foreach($ds->storeB()->getChanged() as $row) {
+			$this->assertEquals(['b' => 2, 'c' => 1], $row->getData(['only-differences' => true]));
+		}
+		foreach($ds->storeB()->getChanged() as $row) {
+			$this->assertEquals(['a' => 3, 'b' => 2], $row->getData(['only-schema-fields' => true]));
+		}
+		foreach($ds->storeB()->getChanged() as $row) {
+			$this->assertEquals(['b' => 2], $row->getData(['only-differences' => true, 'only-schema-fields' => true]));
+		}
+	}
+
+	/**
+	 */
 	public function testDuplicateBehavior() {
 		$ds = new MemoryDiffStorage([
 			'key' => MemoryDiffStorage::INT,

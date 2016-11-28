@@ -143,6 +143,16 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 		if(array_key_exists('ignore', $options) && is_array($options['ignore'])) {
 			$row = array_diff_key($row, array_combine($options['ignore'], $options['ignore']));
 		}
+		if(array_key_exists('only-differences', $options) && $options['only-differences']) {
+			$diffFields = $this->getDiff();
+			$row = array_intersect_key($row, $diffFields);
+		}
+		if(array_key_exists('only-schema-fields', $options) && $options['only-schema-fields']) {
+			$keys = array_combine($this->keys, $this->keys);
+			$valueKeys = array_combine($this->valueKeys, $this->valueKeys);
+			$keys = array_merge($keys, $valueKeys);
+			$row = array_intersect_key($row, $keys);
+		}
 		return $row;
 	}
 
