@@ -44,6 +44,9 @@ interface DiffStorageStoreInterface extends Countable, IteratorAggregate {
 	public function getChanged(array $arguments = []);
 	
 	/**
+	 * Get all rows, that are present in this store, but not in the other and
+	 * get all rows, that have a different value hash in the other store
+	 *
 	 * @param array $arguments
 	 * @return DiffStorageStoreRow[]|Generator
 	 */
@@ -56,6 +59,16 @@ interface DiffStorageStoreInterface extends Countable, IteratorAggregate {
 	 * @return DiffStorageStoreRow[]|Generator
 	 */
 	public function getMissing(array $arguments = []);
+	
+	/**
+	 * Get all rows, that are present in this store, but not in the other and
+	 * get all rows, that have a different value hash in the other store and
+	 * get all rows, that are present in the other store, but not in this
+	 *
+	 * @param array $arguments
+	 * @return DiffStorageStoreRow[]|Generator
+	 */
+	public function getNewOrChangedOrMissing(array $arguments = []);
 
 	/**
 	 * @return $this

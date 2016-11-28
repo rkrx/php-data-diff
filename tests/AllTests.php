@@ -96,6 +96,25 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 
 	/**
 	 */
+	public function testGetNewOrChangedOrMissing() {
+		$res = $this->ds->storeA()->getNewOrChangedOrMissing();
+		foreach($res as $idx => $value) {
+			if($idx === 0) {
+				$this->assertEquals(['client_id' => 50, 'description' => 'Dies ist ein Test', 'total' => 60, 'a' => null, 'test' => 0], $value->getData());
+			}
+			if($idx === 1) {
+				$this->assertEquals(['client_id' => 501, 'description' => 'Dies ist ein Test', 'total' => 59.98999, 'a' => null, 'test' => 1], $value->getData());
+			}
+			if($idx === 2) {
+				$this->assertEquals(['client_id' => 1, 'description' => 'Dies ist ein Test', 'total' => 59.98999, 'a' => null, 'test' => 1], $value->getForeignData());
+				return;
+			}
+		}
+		$this->assertTrue(false);
+	}
+
+	/**
+	 */
 	public function testHasAnyChnges() {
 		$this->assertTrue($this->ds->storeB()->hasAnyChanges());
 		$emptyDs = new MemoryDiffStorage(['key' => MemoryDiffStorage::INT], ['val' => MemoryDiffStorage::INT]);

@@ -249,6 +249,20 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 			return $this->formatMissingRow($row);
 		});
 	}
+	
+	/**
+	 * @param array $arguments
+	 * @return DiffStorageStoreRow[]|Generator
+	 */
+	public function getNewOrChangedOrMissing(array $arguments = []) {
+		// Do not use `yield from` here, since the key (index) will start at 0 with getMissing()
+		foreach($this->getNewOrChanged($arguments) as $row) {
+			yield $row;
+		}
+		foreach($this->getMissing($arguments) as $row) {
+			yield $row;
+		}
+	}
 
 	/**
 	 * @return $this
