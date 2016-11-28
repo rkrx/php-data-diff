@@ -1,7 +1,7 @@
 <?php
 namespace DataDiff;
 
-use DataDiff\Tools\StringShortener;
+use DataDiff\Tools\StringTools;
 use Generator;
 use JsonSerializable;
 use PDO;
@@ -86,7 +86,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 					if($oldData === null) {
 						$oldData = [];
 					} else {
-						$oldData = json_decode($oldData, true);
+						$oldData = unserialize($oldData);
 					}
 					$data = $duplicateKeyHandler($data, $oldData);
 					$metaData = $this->buildMetaData($data);
@@ -282,9 +282,9 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 		$stmt = $this->pdo->query($query);
 		$stmt->execute(['sA' => $this->storeA, 'sB' => $this->storeB]);
 		while($row = $stmt->fetch(PDO::FETCH_NUM)) {
-			$d = json_decode($row[1], true);
-			$f = json_decode($row[2], true);
-			yield $this->instantiateRow($d, $f, $stringFormatter);
+			$d = unserialize($row[1]);
+			$f = unserialize($row[2]);
+			yield $this->instantiateRow($d !== false ? $d : null, $f !== false ? $f : null, $stringFormatter);
 		}
 		$stmt->closeCursor();
 	}
@@ -306,7 +306,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 		$stmt = $this->pdo->query($query);
 		$stmt->execute(['s' => $this->storeA]);
 		while($row = $stmt->fetch(PDO::FETCH_NUM)) {
-			$row = json_decode($row[0], true);
+			$row = unserialize($row[0]);
 			$row = $this->instantiateRow($row, [], function (DiffStorageStoreRowInterface $row) {
 				return $this->formatKeyValuePairs($row->getData());
 			});
@@ -402,13 +402,13 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 		$keyParts = [];
 		foreach($keyValues as $key => $value) {
 			if(is_string($value) && $shortenLongValues) {
-				$value = StringShortener::shorten($value);
+				$value = StringTools::shorten($value);
 			}
-			$keyParts[] = sprintf("%s: %s", $key, json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+			$keyParts[] = sprintf("%s: %s", $key, StringTools::jsonEncode($value));
 		}
 		return join(', ', $keyParts);
 	}
-
+	
 	/**
 	 * @param array $data
 	 * @return array
@@ -416,7 +416,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	private function buildMetaData(array $data) {
 		$metaData = $data;
 		$metaData = array_diff_key($metaData, array_diff_key($metaData, $this->converter));
-		$metaData['___data'] = json_encode($data);
+		$metaData['___data'] = serialize($data);
 		$metaData['___sort'] = $this->counter;
 		return $metaData;
 	}

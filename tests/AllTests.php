@@ -2,6 +2,7 @@
 namespace DataDiff;
 
 use DataDiff\Helpers\JsonSerializeTestObj;
+use DataDiff\Tools\StringTools;
 
 class AllTests extends \PHPUnit_Framework_TestCase {
 	/** @var MemoryDiffStorage */
@@ -392,6 +393,31 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 			'a' => 'INTEGR',
 			'b' => MemoryDiffStorage::STR,
 		]);
+	}
+
+	/**
+	 */
+	public function testCorruptUtf8() {
+		$ds = new MemoryDiffStorage([
+			'key' => MemoryDiffStorage::INT,
+		], [
+			'value' => MemoryDiffStorage::STR,
+		]);
+		$this->assertEquals('null', StringTools::jsonEncode(null));
+		$this->assertEquals('123', StringTools::jsonEncode(123));
+		$this->assertEquals('123.45', StringTools::jsonEncode(123.45));
+		$this->assertEquals('"abc"', StringTools::jsonEncode('abc'));
+		$this->assertEquals('[1,2,3]', StringTools::jsonEncode([1,2,3]));
+		$this->assertEquals('"bbb' . chr(0xEF) . chr(0xBF) . chr(0xBD) . 'xx"', StringTools::jsonEncode('bbb' . chr(197) . 'xxx'));
+		$ds->storeA()->addRow(['key' => 1, 'value' => 'aaa' . chr(197)]);
+		$ds->storeB()->addRow(['key' => 1, 'value' => 'bbb' . chr(197)]);
+		foreach($ds->storeB()->getChanged() as $row) {
+			$this->assertEquals(1, $row['key']);
+			$this->assertEquals('bbb' . chr(197), $row['value']);
+			$this->assertEquals(['value' => ['local' => 'bbb' . chr(197), 'foreign' => 'aaa' . chr(197)]], $row->getDiff());
+			return;
+		}
+		$this->assertTrue(false);
 	}
 }
 

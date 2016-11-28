@@ -1,7 +1,7 @@
 <?php
 namespace DataDiff;
 
-use DataDiff\Tools\StringShortener;
+use DataDiff\Tools\StringTools;
 use Exception;
 
 class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
@@ -95,7 +95,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 			$jsonLocalValue = is_scalar($localValue) ? (string) $localValue : $localValue;
 			$jsonRemoteValue = is_scalar($foreignValue) ? (string) $foreignValue : $foreignValue;
 
-			if(json_encode($jsonLocalValue) !== json_encode($jsonRemoteValue)) {
+			if(serialize($jsonLocalValue) !== serialize($jsonRemoteValue)) {
 				$diff[$key] = ['local' => $localValue, 'foreign' => $foreignValue];
 			}
 		}
@@ -114,9 +114,9 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 			$result = [];
 			$formatVal = function ($value) {
 				if(is_string($value)) {
-					$value = StringShortener::shorten($value);
+					$value = StringTools::shorten($value);
 				}
-				return json_encode($value, JSON_UNESCAPED_SLASHES);
+				return StringTools::jsonEncode($value);
 			};
 			foreach($diff as $fieldName => $values) {
 				$foreignValue = $formatVal($values['foreign']);
