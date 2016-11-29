@@ -52,7 +52,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	 * @return array
 	 */
 	public function getKeyData(array $options = []) {
-		$row = $this->getData();
+		$row = $this->getData($options);
 		$row = array_intersect_key($row, array_combine($this->keys, $this->keys));
 		return $row;
 	}
@@ -62,7 +62,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	 * @return array
 	 */
 	public function getValueData(array $options = []) {
-		$row = $this->getData();
+		$row = $this->getData($options);
 		$row = array_intersect_key($row, array_combine($this->valueKeys, $this->valueKeys));
 		return $row;
 	}
