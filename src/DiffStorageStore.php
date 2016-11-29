@@ -378,9 +378,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 */
 	private function formatChangedRow(DiffStorageStoreRowInterface $row) {
 		$keys = $this->formatKeyValuePairs($row->getLocal()->getKeyData(), false);
-		$values = $row->getForeign()->getValueData();
-		$valueKeys = array_keys($values);
-		return sprintf("Changed %s => %s", $keys, $row->getDiffFormatted($valueKeys));
+		return sprintf("Changed %s => %s", $keys, $row->getDiffFormatted($this->valueKeys));
 	}
 
 	/**

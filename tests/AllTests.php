@@ -419,5 +419,62 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 		}
 		$this->assertTrue(false);
 	}
+
+	/**
+	 */
+	public function testHandleMissingKeys() {
+		$ds = new MemoryDiffStorage([
+			'key' => MemoryDiffStorage::INT,
+		], [
+			'a' => MemoryDiffStorage::INT,
+			'b' => MemoryDiffStorage::INT,
+			'c' => MemoryDiffStorage::INT,
+		]);
+		$ds->storeA()->addRow([
+			'key' => 1,
+			'a' => 1,
+			'b' => 2,
+			'c' => 3,
+		]);
+		$ds->storeB()->addRow([
+			'key' => 1,
+			'a' => 3,
+			'b' => 2,
+		]);
+		call_user_func(function () use ($ds) {
+			foreach($ds->storeB()->getChanged() as $row) {
+				$expectedResult = [
+					'a' => [
+						'local' => 3,
+						'foreign' => 1,
+					],
+					'c' => [
+						'local' => null,
+						'foreign' => 3,
+					]
+				];
+				$this->assertEquals($expectedResult, $row->getDiff());
+				return;
+			}
+			$this->assertTrue(false);
+		});
+		call_user_func(function () use ($ds) {
+			foreach($ds->storeA()->getChanged() as $row) {
+				$expectedResult = [
+					'a' => [
+						'local' => 1,
+						'foreign' => 3,
+					],
+					'c' => [
+						'local' => 3,
+						'foreign' => null,
+					]
+				];
+				$this->assertEquals($expectedResult, $row->getDiff());
+				return;
+			}
+			$this->assertTrue(false);
+		});
+	}
 }
 
