@@ -144,7 +144,7 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 					$def[$name] = function ($value) { return $value !== null ? (double) number_format((double) $value, 12, '.', '') : null; };
 					break;
 				case 'MONEY':
-					$def[$name] = function ($value) { return $value !== null ? (float) number_format((float) $value, 2, '.', '') : null; };
+					$def[$name] = function ($value) { return $value !== null ? number_format((float) $value, 2, '.', '') : null; };
 					break;
 				case 'STR':
 				case 'STRING':
