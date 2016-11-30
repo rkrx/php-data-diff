@@ -72,7 +72,7 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testChangeStringRepresentation() {
 		foreach($this->ds->storeA()->getChanged() as $row) {
-			$this->assertEquals('Changed client_id: 50 => total: 59.99 -> 60', (string) $row);
+			$this->assertEquals('Changed client_id: 50 => total: "59.99" -> "60.00"', (string) $row);
 		}
 	}
 
