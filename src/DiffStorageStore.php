@@ -133,6 +133,35 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 	
 	/**
+	 * Get all rows, that have a different value hash in the other store
+	 *
+	 * @param array $arguments
+	 * @return DiffStorageStoreRow[]|Generator
+	 */
+	public function getUnchanged(array $arguments = []) {
+		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
+		return $this->query("
+			SELECT
+				s1.s_key AS k,
+				s1.s_data AS d,
+				s2.s_data AS f
+			FROM
+				data_store AS s1
+			INNER JOIN
+				data_store AS s2 ON s2.s_ab = :sB AND s1.s_key = s2.s_key
+			WHERE
+				s1.s_ab = :sA
+				AND
+				s1.s_value = s2.s_value
+			ORDER BY
+				s1.s_sort
+			{$limit}	
+		", function (DiffStorageStoreRowInterface $row) {
+			return $this->formatChangedRow($row);
+		});
+	}
+	
+	/**
 	 * Get all rows, that are present in this store, but not in the other
 	 *
 	 * @param array $arguments

@@ -41,6 +41,14 @@ interface DiffStorageStoreInterface extends Countable, IteratorAggregate {
 	 * @param array $arguments
 	 * @return DiffStorageStoreRow[]|Generator
 	 */
+	public function getUnchanged(array $arguments = []);
+	
+	/**
+	 * Get all rows, that have a different value hash in the other store
+	 *
+	 * @param array $arguments
+	 * @return DiffStorageStoreRow[]|Generator
+	 */
 	public function getChanged(array $arguments = []);
 	
 	/**

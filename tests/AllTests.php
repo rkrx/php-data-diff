@@ -34,6 +34,25 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 
 	/**
 	 */
+	public function testUnchanged() {
+		$ds = new MemoryDiffStorage(['key' => MemoryDiffStorage::INT], ['val' => MemoryDiffStorage::INT]);
+		$ds->storeA()->addRow(['key' => 1, 'val' => 1]);
+		$ds->storeA()->addRow(['key' => 2, 'val' => 1]);
+		$ds->storeA()->addRow(['key' => 3, 'val' => 1]);
+		$ds->storeB()->addRow(['key' => 1, 'val' => 1]);
+		$ds->storeB()->addRow(['key' => 2, 'val' => 2]);
+		$ds->storeB()->addRow(['key' => 3, 'val' => 2]);
+		$res = iterator_to_array($ds->storeB()->getUnchanged());
+		$this->assertCount(1, $res);
+		foreach($res as $key => $value) {
+			$this->assertEquals(1, $value['key']);
+			return;
+		}
+		$this->assertTrue(false);
+	}
+
+	/**
+	 */
 	public function testNew() {
 		$res = $this->ds->storeA()->getNew();
 		foreach($res as $key => $value) {
