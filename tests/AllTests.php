@@ -44,8 +44,9 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 		$ds->storeB()->addRow(['key' => 3, 'val' => 2]);
 		$res = iterator_to_array($ds->storeB()->getUnchanged());
 		$this->assertCount(1, $res);
-		foreach($res as $key => $value) {
+		foreach($res as $value) {
 			$this->assertEquals(1, $value['key']);
+			$this->assertEquals('Unchanged key: 1', (string) $value);
 			return;
 		}
 		$this->assertTrue(false);

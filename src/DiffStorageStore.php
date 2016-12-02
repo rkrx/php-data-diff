@@ -157,7 +157,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 				s1.s_sort
 			{$limit}	
 		", function (DiffStorageStoreRowInterface $row) {
-			return $this->formatChangedRow($row);
+			return $this->formatUnchangedRow($row);
 		});
 	}
 	
@@ -399,6 +399,15 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 		$keys = $this->formatKeyValuePairs($row->getLocal()->getKeyData(), false);
 		$values = $this->formatKeyValuePairs($row->getLocal()->getValueData());
 		return sprintf("New %s (%s)", $keys, $values);
+	}
+
+	/**
+	 * @param DiffStorageStoreRowInterface $row
+	 * @return string
+	 */
+	private function formatUnchangedRow(DiffStorageStoreRowInterface $row) {
+		$keys = $this->formatKeyValuePairs($row->getLocal()->getKeyData(), false);
+		return sprintf("Unchanged %s", $keys);
 	}
 
 	/**
