@@ -1,8 +1,6 @@
 <?php
 namespace DataDiff;
 
-use Exception;
-
 class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	/** @var array */
 	private $data = [];
@@ -14,14 +12,14 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	private $stringFormatter;
 
 	/**
-	 * @param array $localData
-	 * @param array $foreignData
+	 * @param array|null $localData
+	 * @param array|null $foreignData
 	 * @param array $keys
 	 * @param array $valueKeys
 	 * @param array $converter
 	 * @param callable $stringFormatter
 	 */
-	public function __construct(array $localData = null, array $foreignData = null, array $keys, array $valueKeys, array $converter, $stringFormatter) {
+	public function __construct(?array $localData, ?array $foreignData, array $keys, array $valueKeys, array $converter, callable $stringFormatter) {
 		if($localData !== null) {
 			$this->data = $localData;
 		} elseif($foreignData !== null) {
@@ -56,7 +54,7 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	 * @param array $options
 	 * @return array
 	 */
-	public function getData(array $options = []) {
+	public function getData(array $options = []): array {
 		return $this->localData->getData($options);
 	}
 
@@ -68,25 +66,24 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	 * @param array $options
 	 * @return array
 	 */
-	public function getForeignData(array $options = []) {
+	public function getForeignData(array $options = []): array {
 		return $this->foreignRowData->getData($options);
 	}
 
 	/**
-	 * @param array $fields
+	 * @param array|null $fields
 	 * @return array
 	 */
-	public function getDiff(array $fields = null) {
+	public function getDiff(?array $fields = null): array {
 		return $this->localData->getDiff($fields);
 	}
 
 	/**
-	 * @param array $fields
-	 * @param mixed $format
-	 * @return array
-	 * @throws Exception
+	 * @param array|null $fields
+	 * @param string|null $format
+	 * @return string
 	 */
-	public function getDiffFormatted(array $fields = null, $format = null) {
+	public function getDiffFormatted(?array $fields = null, ?string $format = null): string {
 		return $this->localData->getDiffFormatted($fields, $format);
 	}
 
@@ -99,9 +96,9 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 
 	/**
 	 * @param mixed $offset
-	 * @return boolean true on success or false on failure.
+	 * @return bool true on success or false on failure.
 	 */
-	public function offsetExists($offset) {
+	public function offsetExists($offset): bool {
 		return array_key_exists($offset, $this->data);
 	}
 
@@ -121,7 +118,7 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	 * @param mixed $value
 	 * @return void
 	 */
-	public function offsetSet($offset, $value) {
+	public function offsetSet($offset, $value): void {
 		$this->data[$offset] = $value;
 	}
 
@@ -129,7 +126,7 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	 * @param mixed $offset
 	 * @return void
 	 */
-	public function offsetUnset($offset) {
+	public function offsetUnset($offset): void {
 		if($this->offsetExists($offset)) {
 			unset($this->data[$offset]);
 		}
@@ -138,7 +135,7 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	/**
 	 * @return string
 	 */
-	public function __toString() {
+	public function __toString(): string {
 		return (string) call_user_func($this->stringFormatter, $this);
 	}
 }

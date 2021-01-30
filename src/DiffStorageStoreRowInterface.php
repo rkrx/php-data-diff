@@ -1,7 +1,6 @@
 <?php
 namespace DataDiff;
 
-use Exception;
 use JsonSerializable;
 use ArrayAccess;
 
@@ -24,7 +23,7 @@ interface DiffStorageStoreRowInterface extends JsonSerializable, ArrayAccess {
 	 * @param array $options
 	 * @return array
 	 */
-	public function getData(array $options = []);
+	public function getData(array $options = []): array;
 
 	/**
 	 * `$options` are:
@@ -34,21 +33,20 @@ interface DiffStorageStoreRowInterface extends JsonSerializable, ArrayAccess {
 	 * @param array $options
 	 * @return array
 	 */
-	public function getForeignData(array $options = []);
+	public function getForeignData(array $options = []): array;
 
 	/**
-	 * @param array $fields
+	 * @param array|null $fields
 	 * @return array
 	 */
-	public function getDiff(array $fields = null);
+	public function getDiff(array $fields = null): array;
 
 	/**
-	 * @param array $fields
-	 * @param mixed $format
-	 * @return array
-	 * @throws Exception
+	 * @param array|null $fields
+	 * @param string|null $format
+	 * @return string
 	 */
-	public function getDiffFormatted(array $fields = null, $format = null);
+	public function getDiffFormatted(?array $fields = null, ?string $format = null): string;
 
 	/**
 	 * @return mixed
@@ -57,9 +55,9 @@ interface DiffStorageStoreRowInterface extends JsonSerializable, ArrayAccess {
 
 	/**
 	 * @param mixed $offset
-	 * @return boolean true on success or false on failure.
+	 * @return bool true on success or false on failure.
 	 */
-	public function offsetExists($offset);
+	public function offsetExists($offset): bool;
 
 	/**
 	 * @param mixed $offset
@@ -72,16 +70,16 @@ interface DiffStorageStoreRowInterface extends JsonSerializable, ArrayAccess {
 	 * @param mixed $value
 	 * @return void
 	 */
-	public function offsetSet($offset, $value);
+	public function offsetSet($offset, $value): void;
 
 	/**
 	 * @param mixed $offset
 	 * @return void
 	 */
-	public function offsetUnset($offset);
+	public function offsetUnset($offset): void;
 
 	/**
 	 * @return string
 	 */
-	public function __toString();
+	public function __toString(): string;
 }

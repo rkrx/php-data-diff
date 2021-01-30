@@ -5,21 +5,23 @@ use DataDiff\Exceptions\EmptySchemaException;
 use DataDiff\Exceptions\InvalidSchemaException;
 use Exception;
 use PDO;
+use PDOException;
+use RuntimeException;
 
 /**
  * @package DataDiff
  */
 abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldTypeConstants {
 	/** @var PDO */
-	private $pdo = null;
+	private $pdo;
 	/** @var DiffStorageStore */
-	private $storeA = null;
+	private $storeA;
 	/** @var DiffStorageStore */
-	private $storeB = null;
+	private $storeB;
 	/** @var array */
-	private $keys = [];
+	private $keys;
 	/** @var array */
-	private $valueKeys = [];
+	private $valueKeys;
 
 	/**
 	 * Predefined types:
@@ -33,6 +35,9 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	 * @param array $keySchema
 	 * @param array $valueSchema
 	 * @param array $options
+	 *
+	 * @throws EmptySchemaException
+	 * @throws InvalidSchemaException
 	 */
 	public function __construct(array $keySchema, array $valueSchema, array $options) {
 		$options = $this->defineOptionDefaults($options);
@@ -58,21 +63,21 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	/**
 	 * @return array
 	 */
-	public function getKeys() {
+	public function getKeys(): array {
 		return $this->keys;
 	}
 
 	/**
 	 * @return DiffStorageStore
 	 */
-	public function storeA() {
+	public function storeA(): DiffStorageStore {
 		return $this->storeA;
 	}
 
 	/**
 	 * @return DiffStorageStore
 	 */
-	public function storeB() {
+	public function storeB(): DiffStorageStore {
 		return $this->storeB;
 	}
 
@@ -82,7 +87,7 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	 * @throws EmptySchemaException
 	 * @throws InvalidSchemaException
 	 */
-	private function buildSchema($schema) {
+	private function buildSchema(array $schema): string {
 		$def = [];
 		foreach($schema as $name => $type) {
 			switch ($type) {
@@ -125,7 +130,7 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	 * @return array
 	 * @throws InvalidSchemaException
 	 */
-	private function buildConverter($schema) {
+	private function buildConverter(array $schema): array {
 		$def = [];
 		foreach($schema as $name => $type) {
 			switch ($type) {
@@ -161,14 +166,19 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	}
 
 	/**
+	 * @throws RuntimeException
 	 */
 	private function compatibility() {
-		if(!$this->testStatement('SELECT printf("%0.2f", 19.99999) AS res')) {
-			$this->registerUDFunction('printf', 'sprintf');
-		}
+		try {
+			if(!$this->testStatement('SELECT printf("%0.2f", 19.99999) AS res')) {
+				$this->registerUDFunction('printf', 'sprintf');
+			}
 
-		if(!$this->testStatement('SELECT md5("aaa") AS md5res')) {
-			$this->registerUDFunction('md5', 'md5');
+			if(!$this->testStatement('SELECT md5("aaa") AS md5res')) {
+				$this->registerUDFunction('md5', 'md5');
+			}
+		} catch (Exception $e) {
+			throw new RuntimeException($e->getMessage(), (int) $e->getCode(), $e);
 		}
 	}
 
@@ -176,10 +186,10 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	 * @param string $query
 	 * @return bool
 	 */
-	private function testStatement($query) {
+	private function testStatement(string $query): bool {
 		try {
 			return $this->pdo->query($query)->execute() !== false;
-		} catch (\PDOException $e) {
+		} catch (PDOException $e) {
 			return false;
 		}
 	}
@@ -189,7 +199,7 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	 * @param mixed $callback
 	 * @throws Exception
 	 */
-	private function registerUDFunction($name, $callback) {
+	private function registerUDFunction(string $name, $callback) {
 		if(!method_exists($this->pdo, 'sqliteCreateFunction')) {
 			throw new Exception('It is not possible to create user defined functions for rkr/data-diff\'s sqlite instance');
 		}
@@ -224,7 +234,7 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	 * @param array $options
 	 * @return array
 	 */
-	private function defineOptionDefaults($options) {
+	private function defineOptionDefaults(array $options): array {
 		if(!array_key_exists('dsn', $options)) {
 			$options['dsn'] = 'sqlite::memory:';
 		}

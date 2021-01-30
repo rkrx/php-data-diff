@@ -1,7 +1,7 @@
 <?php
 namespace DataDiff\Exceptions;
 
-use Exception;
+use RuntimeException;
 
-class InvalidSchemaException extends Exception {
+class InvalidSchemaException extends RuntimeException {
 }

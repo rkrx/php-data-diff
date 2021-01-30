@@ -2,7 +2,7 @@
 namespace DataDiff;
 
 use DataDiff\Tools\StringTools;
-use Exception;
+use RuntimeException;
 
 class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	/** @var array */
@@ -23,7 +23,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	 * @param array $valueKeys
 	 * @param array $converter
 	 */
-	public function __construct(array $row = [], array $foreignRow = [], array $keys, array $valueKeys, array $converter) {
+	public function __construct(array $row, array $foreignRow, array $keys, array $valueKeys, array $converter) {
 		$this->row = $row;
 		$this->foreignRow = $foreignRow;
 		$this->keys = $keys;
@@ -35,7 +35,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	 * @param array $options
 	 * @return array
 	 */
-	public function getData(array $options = []) {
+	public function getData(array $options = []): array {
 		return $this->applyOptions($this->row, $options);
 	}
 
@@ -43,7 +43,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	 * @param array $options
 	 * @return array
 	 */
-	public function getForeignData(array $options = []) {
+	public function getForeignData(array $options = []): array {
 		return $this->applyOptions($this->foreignRow, $options);
 	}
 
@@ -51,7 +51,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	 * @param array $options
 	 * @return array
 	 */
-	public function getKeyData(array $options = []) {
+	public function getKeyData(array $options = []): array {
 		$row = $this->getData($options);
 		$row = array_intersect_key($row, array_combine($this->keys, $this->keys));
 		return $row;
@@ -61,17 +61,17 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	 * @param array $options
 	 * @return array
 	 */
-	public function getValueData(array $options = []) {
+	public function getValueData(array $options = []): array {
 		$row = $this->getData($options);
 		$row = array_intersect_key($row, array_combine($this->valueKeys, $this->valueKeys));
 		return $row;
 	}
 
 	/**
-	 * @param array $fields
+	 * @param array|null $fields
 	 * @return array
 	 */
-	public function getDiff(array $fields = null) {
+	public function getDiff(?array $fields = null): array {
 		$diff = [];
 		$localRow = $this->getData(['keys' => $fields]);
 		$foreignRow = $this->getForeignData(['keys' => $fields]);
@@ -82,7 +82,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 		));
 		$formattedLocalRow = $this->formatRow($localRow);
 		$formattedForeignRow = $this->formatRow($foreignRow);
-		
+
 		$conv = function (array $row, $key) {
 			$value = null;
 			if(array_key_exists($key, $row)) {
@@ -93,7 +93,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 			}
 			return $value;
 		};
-		
+
 		$asString = function ($value) {
 			if(is_float($value)) {
 				$value = number_format($value, 8, '.', '');
@@ -102,11 +102,11 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 			}
 			return serialize($value);
 		};
-		
+
 		foreach($keys as $key) {
 			$localValue = call_user_func($conv, $formattedLocalRow, $key);
 			$foreignValue = call_user_func($conv, $formattedForeignRow, $key);
-			
+
 			if($asString($localValue) !== $asString($foreignValue)) {
 				$diff[$key] = ['local' => $localValue, 'foreign' => $foreignValue];
 			}
@@ -115,12 +115,11 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	}
 
 	/**
-	 * @param array $fields
-	 * @param mixed $format
-	 * @return array
-	 * @throws Exception
+	 * @param array|null $fields
+	 * @param string|null $format
+	 * @return string
 	 */
-	public function getDiffFormatted(array $fields = null, $format = null) {
+	public function getDiffFormatted(?array $fields = null, ?string $format = null): string {
 		$diff = $this->getDiff($fields);
 		if($format === null) {
 			$result = [];
@@ -137,7 +136,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 			}
 			return join(', ', $result);
 		}
-		throw new Exception("Unknown format: {$format}");
+		throw new RuntimeException("Unknown format: {$format}");
 	}
 
 	/**
@@ -145,7 +144,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	 * @param array $options
 	 * @return array
 	 */
-	private function applyOptions(array $row, array $options) {
+	private function applyOptions(array $row, array $options): array {
 		if(count($options) < 1) {
 			return $row;
 		}
@@ -172,7 +171,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	 * @param array $row
 	 * @return array
 	 */
-	private function formatRow($row) {
+	private function formatRow(array $row): array {
 		$schema = $this->converter;
 		$schema = array_map(function () { return null; }, $schema);
 		$row = array_merge($schema, $row);

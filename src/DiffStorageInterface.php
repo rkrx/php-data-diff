@@ -5,15 +5,15 @@ interface DiffStorageInterface {
 	/**
 	 * @return array
 	 */
-	public function getKeys();
+	public function getKeys(): array;
 
 	/**
 	 * @return DiffStorageStore
 	 */
-	public function storeA();
+	public function storeA(): DiffStorageStore;
 
 	/**
 	 * @return DiffStorageStore
 	 */
-	public function storeB();
+	public function storeB(): DiffStorageStore;
 }

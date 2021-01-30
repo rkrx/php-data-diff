@@ -8,37 +8,37 @@ interface DiffStorageStoreRowDataInterface {
 	 * @param array $options
 	 * @return array
 	 */
-	public function getData(array $options = []);
+	public function getData(array $options = []): array;
 
 	/**
 	 * @param array $options
 	 * @return array
 	 */
-	public function getForeignData(array $options = []);
+	public function getForeignData(array $options = []): array;
 
 	/**
 	 * @param array $options
 	 * @return array
 	 */
-	public function getKeyData(array $options = []);
+	public function getKeyData(array $options = []): array;
 
 	/**
 	 * @param array $options
 	 * @return array
 	 */
-	public function getValueData(array $options = []);
+	public function getValueData(array $options = []): array;
 
 	/**
-	 * @param array $fields
+	 * @param array|null $fields
 	 * @return array
 	 */
-	public function getDiff(array $fields = null);
+	public function getDiff(?array $fields = null): array;
 
 	/**
-	 * @param array $fields
-	 * @param mixed $format
-	 * @return array
+	 * @param array|null $fields
+	 * @param string|null $format
+	 * @return string
 	 * @throws Exception
 	 */
-	public function getDiffFormatted(array $fields = null, $format = null);
+	public function getDiffFormatted(?array $fields = null, ?string $format = null): string;
 }

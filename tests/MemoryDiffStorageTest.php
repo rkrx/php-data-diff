@@ -1,16 +1,18 @@
 <?php
 namespace DataDiff;
 
+use DataDiff\Exceptions\InvalidSchemaException;
 use DataDiff\Helpers\JsonSerializeTestObj;
 use DataDiff\Tools\StringTools;
+use PHPUnit\Framework\TestCase;
 
-class AllTests extends \PHPUnit_Framework_TestCase {
+class MemoryDiffStorageTest extends TestCase {
 	/** @var MemoryDiffStorage */
 	private $ds = null;
 
 	/**
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 
 		$this->ds = new MemoryDiffStorage([
@@ -199,12 +201,12 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 			$ds->storeA()->addRow(['key' => $i, 'value' => $i]);
 			$ds->storeB()->addRow(['key' => $i * 2, 'value' => $i]);
 		}
-		
+
 		$this->assertCount(50, iterator_to_array($ds->storeB()->getNew()));
 		$this->assertCount(49, iterator_to_array($ds->storeB()->getChanged()));
 		$this->assertCount(99, iterator_to_array($ds->storeB()->getNewOrChanged()));
 		$this->assertCount(50, iterator_to_array($ds->storeB()->getMissing()));
-		
+
 		$this->assertCount(10, iterator_to_array($ds->storeB()->getNew(['limit' => 10])));
 		$this->assertCount(10, iterator_to_array($ds->storeB()->getChanged(['limit' => 10])));
 		$this->assertCount(10, iterator_to_array($ds->storeB()->getNewOrChanged(['limit' => 10])));
@@ -406,7 +408,7 @@ class AllTests extends \PHPUnit_Framework_TestCase {
 	/**
 	 */
 	public function testFalsySchema() {
-		$this->setExpectedException("DataDiff\\Exceptions\\InvalidSchemaException");
+		self::expectException(InvalidSchemaException::class);
 		new MemoryDiffStorage([
 			'key' => MemoryDiffStorage::INT,
 		], [

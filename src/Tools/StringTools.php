@@ -1,7 +1,7 @@
 <?php
 namespace DataDiff\Tools;
 
-use Exception;
+use RuntimeException;
 
 class StringTools {
 	/**
@@ -9,7 +9,7 @@ class StringTools {
 	 * @param int $maxLength
 	 * @return string
 	 */
-	public static function shorten($input, $maxLength = 32) {
+	public static function shorten(string $input, int $maxLength = 32): string {
 		$value = preg_replace('/\\s+/', ' ', $input);
 		$arr = preg_split('/(?!^)(?=.)/u', $value);
 		if(count($arr) > $maxLength) {
@@ -20,13 +20,12 @@ class StringTools {
 		}
 		return $value;
 	}
-	
+
 	/**
 	 * @param mixed $data
 	 * @return string
-	 * @throws Exception
 	 */
-	public static function jsonEncode($data) {
+	public static function jsonEncode($data): string {
 		$value = json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 		$lastError = json_last_error();
 		if($lastError === JSON_ERROR_NONE) {
@@ -35,9 +34,9 @@ class StringTools {
 			$data = self::fixEncoding($data);
 			return json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 		}
-		throw new Exception(json_last_error_msg());
+		throw new RuntimeException(json_last_error_msg());
 	}
-	
+
 	/**
 	 * @param mixed $data
 	 * @return array
