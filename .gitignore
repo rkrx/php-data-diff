@@ -4,7 +4,8 @@
 !/.editorconfig
 !/.gitignore
 !/.travis.yml
-!/composer.json
 !/LICENSE
 !/README.md
+!/composer.json
+!/phpstan.neon
 !/tests.xml
