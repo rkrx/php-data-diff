@@ -4,11 +4,11 @@ namespace DataDiff\Helpers;
 use JsonSerializable;
 
 class JsonSerializeTestObj implements JsonSerializable {
-	/** @var array */
+	/** @var array<mixed, mixed> */
 	private $data;
 
 	/**
-	 * @param array $data
+	 * @param array<mixed, mixed> $data
 	 */
 	public function __construct(array $data) {
 		$this->data = $data;

@@ -3,9 +3,11 @@ namespace DataDiff;
 
 use DataDiff\Exceptions\EmptySchemaException;
 use DataDiff\Exceptions\InvalidSchemaException;
+use DataDiff\Tools\PDOTools;
 use Exception;
 use PDO;
 use PDOException;
+use PDOStatement;
 use RuntimeException;
 
 /**
@@ -18,10 +20,8 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	private $storeA;
 	/** @var DiffStorageStore */
 	private $storeB;
-	/** @var array */
+	/** @var string[] */
 	private $keys;
-	/** @var array */
-	private $valueKeys;
 
 	/**
 	 * Predefined types:
@@ -32,9 +32,9 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	 *     - double
 	 *     - money
 	 *
-	 * @param array $keySchema
-	 * @param array $valueSchema
-	 * @param array $options
+	 * @param array<string, string> $keySchema
+	 * @param array<string, string> $valueSchema
+	 * @param array<string, mixed> $options
 	 *
 	 * @throws EmptySchemaException
 	 * @throws InvalidSchemaException
@@ -47,21 +47,22 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 		$this->buildTables();
 
 		$this->keys = array_keys($keySchema);
-		$this->valueKeys = array_keys($valueSchema);
+		$valueKeys = array_keys($valueSchema);
 
 		$sqlKeySchema = $this->buildSchema($keySchema);
 		$sqlValueSchema = $this->buildSchema($valueSchema);
 
 		$keyConverter = $this->buildConverter($keySchema);
 		$valueConverter = $this->buildConverter($valueSchema);
+
 		$converter = array_merge($keyConverter, $valueConverter);
 
-		$this->storeA = new DiffStorageStore($this->pdo, $sqlKeySchema, $sqlValueSchema, $this->keys, $this->valueKeys, $converter, 'a', 'b', $options['duplicate_key_handler']);
-		$this->storeB = new DiffStorageStore($this->pdo, $sqlKeySchema, $sqlValueSchema, $this->keys, $this->valueKeys, $converter, 'b', 'a', $options['duplicate_key_handler']);
+		$this->storeA = new DiffStorageStore($this->pdo, $sqlKeySchema, $sqlValueSchema, $this->keys, $valueKeys, $converter, 'a', 'b', $options['duplicate_key_handler']);
+		$this->storeB = new DiffStorageStore($this->pdo, $sqlKeySchema, $sqlValueSchema, $this->keys, $valueKeys, $converter, 'b', 'a', $options['duplicate_key_handler']);
 	}
 
 	/**
-	 * @return array
+	 * @return string[]
 	 */
 	public function getKeys(): array {
 		return $this->keys;
@@ -82,7 +83,7 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	}
 
 	/**
-	 * @param array $schema
+	 * @param array<string, string> $schema
 	 * @return string
 	 * @throws EmptySchemaException
 	 * @throws InvalidSchemaException
@@ -122,12 +123,12 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 		if(!count($def)) {
 			throw new EmptySchemaException('Can\'t operate with empty schema');
 		}
-		return join('||"|"||', $def);
+		return implode('||"|"||', $def);
 	}
 
 	/**
-	 * @param array $schema
-	 * @return array
+	 * @param array<string, string> $schema
+	 * @return array<string, callable(mixed): (scalar|null)>
 	 * @throws InvalidSchemaException
 	 */
 	private function buildConverter(array $schema): array {
@@ -168,7 +169,7 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	/**
 	 * @throws RuntimeException
 	 */
-	private function compatibility() {
+	private function compatibility(): void {
 		try {
 			if(!$this->testStatement('SELECT printf("%0.2f", 19.99999) AS res')) {
 				$this->registerUDFunction('printf', 'sprintf');
@@ -188,7 +189,10 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	 */
 	private function testStatement(string $query): bool {
 		try {
-			return $this->pdo->query($query)->execute() !== false;
+			$stmt = $this->pdo->query($query);
+			return PDOTools::useStmt($stmt, function (PDOStatement $stmt) {
+				return $stmt->execute() !== false;
+			});
 		} catch (PDOException $e) {
 			return false;
 		}
@@ -199,7 +203,7 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	 * @param mixed $callback
 	 * @throws Exception
 	 */
-	private function registerUDFunction(string $name, $callback) {
+	private function registerUDFunction(string $name, $callback): void {
 		if(!method_exists($this->pdo, 'sqliteCreateFunction')) {
 			throw new Exception('It is not possible to create user defined functions for rkr/data-diff\'s sqlite instance');
 		}
@@ -208,7 +212,7 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 
 	/**
 	 */
-	private function initSqlite() {
+	private function initSqlite(): void {
 		$tryThis = function ($query) {
 			try {
 				$this->pdo->exec($query);
@@ -224,15 +228,15 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 
 	/**
 	 */
-	private function buildTables() {
+	private function buildTables(): void {
 		$this->pdo->exec('CREATE TABLE data_store (s_ab TEXT, s_key TEXT, s_value TEXT, s_data TEXT, s_sort INT, PRIMARY KEY(s_ab, s_key))');
 		$this->pdo->exec('CREATE INDEX data_store_ab_index ON data_store (s_ab, s_key)');
 		$this->pdo->exec('CREATE INDEX data_store_key_index ON data_store (s_key)');
 	}
 
 	/**
-	 * @param array $options
-	 * @return array
+	 * @param array<string, mixed> $options
+	 * @return array<string, mixed>
 	 */
 	private function defineOptionDefaults(array $options): array {
 		if(!array_key_exists('dsn', $options)) {

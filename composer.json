@@ -1,17 +1,7 @@
 {
 	"name": "rkr/data-diff",
-	"license": "MIT",
 	"description": "A handy tool for comparing structured data quickly in a key-value manner",
-	"autoload": {
-		"psr-4": {
-			"DataDiff\\": ["src/"]
-		}
-	},
-	"autoload-dev": {
-		"psr-4": {
-			"DataDiff\\": ["src/", "tests/"]
-		}
-	},
+	"license": "MIT",
 	"require": {
 		"php": ">= 7.1",
 
@@ -27,8 +17,18 @@
 	"suggest": {
 		"rkr/data-diff-helpers": "Some Helpers for rkr/data-diff"
 	},
+	"autoload": {
+		"psr-4": {
+			"DataDiff\\": ["src/"]
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"DataDiff\\": ["src/", "tests/"]
+		}
+	},
 	"scripts": {
 		"phpunit": "phpunit -c tests.xml",
-		"phpstan": "phpstan analyse --level 4 src tests"
+		"phpstan": "phpstan analyse -c phpstan.neon"
 	}
 }

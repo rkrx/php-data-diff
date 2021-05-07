@@ -6,9 +6,9 @@ use DataDiff\Exceptions\InvalidSchemaException;
 
 class MemoryDiffStorage extends DiffStorage {
 	/**
-	 * @param array $keySchema
-	 * @param array $valueSchema
-	 * @param array $options
+	 * @param array<string, string> $keySchema
+	 * @param array<string, string> $valueSchema
+	 * @param array<string, mixed> $options
 	 *
 	 * @throws EmptySchemaException
 	 * @throws InvalidSchemaException

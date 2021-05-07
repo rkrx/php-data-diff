@@ -4,6 +4,9 @@ namespace DataDiff;
 use JsonSerializable;
 use ArrayAccess;
 
+/**
+ * @extends ArrayAccess<string, mixed>
+ */
 interface DiffStorageStoreRowInterface extends JsonSerializable, ArrayAccess {
 	/**
 	 * @return DiffStorageStoreRowDataInterface
@@ -20,8 +23,8 @@ interface DiffStorageStoreRowInterface extends JsonSerializable, ArrayAccess {
 	 * * `keys`: Only these keys are considered and returned
 	 * * `ignore`: These keys are ignored and omitted
 	 *
-	 * @param array $options
-	 * @return array
+	 * @param array<string, mixed> $options
+	 * @return array<string, mixed>
 	 */
 	public function getData(array $options = []): array;
 
@@ -30,50 +33,50 @@ interface DiffStorageStoreRowInterface extends JsonSerializable, ArrayAccess {
 	 * * `keys`: Only these keys are considered and returned
 	 * * `ignore`: These keys are ignored and omitted
 	 *
-	 * @param array $options
-	 * @return array
+	 * @param array<string, mixed> $options
+	 * @return array<string, mixed>
 	 */
 	public function getForeignData(array $options = []): array;
 
 	/**
-	 * @param array|null $fields
-	 * @return array
+	 * @param null|string[] $fields
+	 * @return array<string, array{local: mixed, foreign: mixed}>
 	 */
-	public function getDiff(array $fields = null): array;
+	public function getDiff(?array $fields = null): array;
 
 	/**
-	 * @param array|null $fields
-	 * @param string|null $format
+	 * @param null|array<string, mixed> $fields
+	 * @param null|string $format
 	 * @return string
 	 */
 	public function getDiffFormatted(?array $fields = null, ?string $format = null): string;
 
 	/**
-	 * @return mixed
+	 * @return array<string, mixed>
 	 */
 	public function jsonSerialize();
 
 	/**
-	 * @param mixed $offset
+	 * @param string $offset
 	 * @return bool true on success or false on failure.
 	 */
 	public function offsetExists($offset): bool;
 
 	/**
-	 * @param mixed $offset
+	 * @param string $offset
 	 * @return mixed
 	 */
 	public function offsetGet($offset);
 
 	/**
-	 * @param mixed $offset
+	 * @param string $offset
 	 * @param mixed $value
 	 * @return void
 	 */
 	public function offsetSet($offset, $value): void;
 
 	/**
-	 * @param mixed $offset
+	 * @param string $offset
 	 * @return void
 	 */
 	public function offsetUnset($offset): void;

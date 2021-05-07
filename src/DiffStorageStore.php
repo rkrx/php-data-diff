@@ -1,6 +1,8 @@
 <?php
 namespace DataDiff;
 
+use DataDiff\Tools\Json;
+use DataDiff\Tools\PDOTools;
 use DataDiff\Tools\StringTools;
 use Generator;
 use JsonSerializable;
@@ -8,7 +10,6 @@ use PDO;
 use PDOException;
 use PDOStatement;
 use stdClass;
-use Traversable;
 
 class DiffStorageStore implements DiffStorageStoreInterface {
 	/** @var PDO */
@@ -27,9 +28,9 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	private $storeB;
 	/** @var int */
 	private $counter = 0;
-	/** @var callable */
+	/** @var null|callable(array<string, null|scalar>, array<string, null|scalar>): array<string, null|scalar> */
 	private $duplicateKeyHandler;
-	/** @var array */
+	/** @var array<string, callable(mixed): (scalar|null)> */
 	private $converter;
 	/** @var string[] */
 	private $keys;
@@ -42,10 +43,10 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 * @param string $valueSchema
 	 * @param string[] $keys
 	 * @param string[] $valueKeys
-	 * @param array $converter
+	 * @param array<string, callable(mixed): (scalar|null)> $converter
 	 * @param string $storeA
 	 * @param string $storeB
-	 * @param callable|null $duplicateKeyHandler
+	 * @param null|callable(array<string, null|scalar>, array<string, null|scalar>): array<string, null|scalar> $duplicateKeyHandler
 	 */
 	public function __construct(PDO $pdo, string $keySchema, string $valueSchema, array $keys, array $valueKeys, array $converter, string $storeA, string $storeB, ?callable $duplicateKeyHandler) {
 		$this->pdo = $pdo;
@@ -62,11 +63,9 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @param array $data
-	 * @param array|null $translation
-	 * @param callable|null $duplicateKeyHandler
+	 * @inheritDoc
 	 */
-	public function addRow(array $data, ?array $translation = null, ?callable $duplicateKeyHandler = null) {
+	public function addRow(array $data, ?array $translation = null, ?callable $duplicateKeyHandler = null): void {
 		$data = $this->translate($data, $translation);
 		if($duplicateKeyHandler === null) {
 			$duplicateKeyHandler = $this->duplicateKeyHandler;
@@ -81,8 +80,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 			} catch (PDOException $e) {
 				if(strpos($e->getMessage(), 'SQLSTATE[23000]') !== false) {
 					$metaData = $this->buildMetaData($data);
-					unset($metaData['___data']);
-					unset($metaData['___sort']);
+					unset($metaData['___data'], $metaData['___sort']);
 					$this->selectStmt->execute($metaData);
 					$oldData = $this->selectStmt->fetch(PDO::FETCH_COLUMN, 0);
 					if($oldData === null) {
@@ -102,10 +100,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @param Traversable|array[]|object[] $rows
-	 * @param array|null $translation
-	 * @param callable|null $duplicateKeyHandler
-	 * @return $this
+	 * @inheritDoc
 	 */
 	public function addRows($rows, ?array $translation = null, ?callable $duplicateKeyHandler = null) {
 		foreach($rows as $row) {
@@ -120,9 +115,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * Returns true whenever there is any changed, added or removed data available
-	 *
-	 * @return bool
+	 * @inheritDoc
 	 */
 	public function hasAnyChanges(): bool {
 		/** @noinspection PhpUnusedLocalVariableInspection */
@@ -137,10 +130,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * Get all rows, that have a different value hash in the other store
-	 *
-	 * @param array $arguments
-	 * @return DiffStorageStoreRow[]|Generator
+	 * @inheritDoc
 	 */
 	public function getUnchanged(array $arguments = []) {
 		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
@@ -166,10 +156,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * Get all rows, that are present in this store, but not in the other
-	 *
-	 * @param array $arguments
-	 * @return DiffStorageStoreRow[]|Generator
+	 * @inheritDoc
 	 */
 	public function getNew(array $arguments = []) {
 		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
@@ -195,10 +182,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * Get all rows, that have a different value hash in the other store
-	 *
-	 * @param array $arguments
-	 * @return DiffStorageStoreRow[]|Generator
+	 * @inheritDoc
 	 */
 	public function getChanged(array $arguments = []) {
 		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
@@ -224,8 +208,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @param array $arguments
-	 * @return DiffStorageStoreRow[]|Generator
+	 * @inheritDoc
 	 */
 	public function getNewOrChanged(array $arguments = []) {
 		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
@@ -248,17 +231,13 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 		", function (DiffStorageStoreRowInterface $row) {
 			if(count($row->getForeign()->getValueData())) {
 				return $this->formatChangedRow($row);
-			} else {
-				return $this->formatNewRow($row);
 			}
+			return $this->formatNewRow($row);
 		});
 	}
 
 	/**
-	 * Get all rows, that are present in the other store, but not in this
-	 *
-	 * @param array $arguments
-	 * @return DiffStorageStoreRow[]|Generator
+	 * @inheritDoc
 	 */
 	public function getMissing(array $arguments = []) {
 		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
@@ -284,8 +263,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @param array $arguments
-	 * @return DiffStorageStoreRow[]|Generator
+	 * @inheritDoc
 	 */
 	public function getNewOrChangedOrMissing(array $arguments = []) {
 		// Do not use `yield from` here, since the key (index) will start at 0 with getMissing()
@@ -302,29 +280,31 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 */
 	public function clearAll() {
 		$stmt = $this->pdo->query('DELETE FROM data_store WHERE s_ab=:s');
-		$stmt->execute(['s' => $this->storeA]);
-		$stmt->closeCursor();
-		return $this;
+		return PDOTools::useStmt($stmt, function (PDOStatement $stmt) {
+			$stmt->execute(['s' => $this->storeA]);
+			return $this;
+		});
 	}
 
 	/**
 	 * @param string $query
 	 * @param callable $stringFormatter
-	 * @return DiffStorageStoreRow[]|Generator
+	 * @return Generator<int, DiffStorageStoreRow>
 	 */
 	private function query(string $query, callable $stringFormatter) {
 		$stmt = $this->pdo->query($query);
-		$stmt->execute(['sA' => $this->storeA, 'sB' => $this->storeB]);
-		while($row = $stmt->fetch(PDO::FETCH_NUM)) {
-			$d = unserialize($row[1]);
-			$f = unserialize($row[2]);
-			yield $this->instantiateRow($d !== false ? $d : null, $f !== false ? $f : null, $stringFormatter);
-		}
-		$stmt->closeCursor();
+		yield from PDOTools::useStmt($stmt, function (PDOStatement $stmt) use ($stringFormatter) {
+			$stmt->execute(['sA' => $this->storeA, 'sB' => $this->storeB]);
+			while($row = $stmt->fetch(PDO::FETCH_NUM)) {
+				$d = unserialize($row[1]);
+				$f = unserialize($row[2]);
+				yield $this->instantiateRow($d !== false ? $d : null, $f !== false ? $f : null, $stringFormatter);
+			}
+		});
 	}
 
 	/**
-	 * @return Traversable|array[]
+	 * @inheritDoc
 	 */
 	public function getIterator() {
 		$query = '
@@ -338,21 +318,22 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 				s1.s_sort
 		';
 		$stmt = $this->pdo->query($query);
-		$stmt->execute(['s' => $this->storeA]);
-		while($row = $stmt->fetch(PDO::FETCH_NUM)) {
-			$row = unserialize($row[0]);
-			$row = $this->instantiateRow($row, [], function (DiffStorageStoreRowInterface $row) {
-				return $this->formatKeyValuePairs($row->getData());
-			});
-			yield $row->getData();
-		}
-		$stmt->closeCursor();
+		yield from PDOTools::useStmt($stmt, function (PDOStatement $stmt) {
+			$stmt->execute(['s' => $this->storeA]);
+			while($row = $stmt->fetch(PDO::FETCH_NUM)) {
+				$row = unserialize($row[0]);
+				$row = $this->instantiateRow($row, [], function (DiffStorageStoreRowInterface $row) {
+					return $this->formatKeyValuePairs($row->getData());
+				});
+				yield $row->getData();
+			}
+		});
 	}
 
 	/**
-	 * @param array $data
-	 * @param array|null $translation
-	 * @return array
+	 * @param array<string, mixed> $data
+	 * @param null|array<string, string> $translation
+	 * @return array<string, string>
 	 */
 	private function translate(array $data, ?array $translation = null): array {
 		if($translation !== null) {
@@ -374,13 +355,15 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	public function count(): int {
 		$query = 'SELECT COUNT(*) FROM data_store AS s1 WHERE s1.s_ab = :s';
 		$stmt = $this->pdo->query($query);
-		$stmt->execute(['s' => $this->storeA]);
-		return (int) $stmt->fetch(PDO::FETCH_COLUMN, 0);
+		return PDOTools::useStmt($stmt, function (PDOStatement $stmt) {
+			$stmt->execute(['s' => $this->storeA]);
+			return (int) $stmt->fetch(PDO::FETCH_COLUMN, 0);
+		});
 	}
 
 	/**
-	 * @param array|null $localData
-	 * @param array|null $foreignData
+	 * @param null|array<string, mixed> $localData
+	 * @param null|array<string, mixed> $foreignData
 	 * @param callable $stringFormatter
 	 * @return DiffStorageStoreRow
 	 */
@@ -427,7 +410,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @param array $keyValues
+	 * @param array<string, string> $keyValues
 	 * @param bool $shortenLongValues
 	 * @return string
 	 */
@@ -437,14 +420,14 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 			if(is_string($value) && $shortenLongValues) {
 				$value = StringTools::shorten($value);
 			}
-			$keyParts[] = sprintf("%s: %s", $key, StringTools::jsonEncode($value));
+			$keyParts[] = sprintf("%s: %s", $key, Json::encode($value));
 		}
-		return join(', ', $keyParts);
+		return implode(', ', $keyParts);
 	}
 
 	/**
-	 * @param array $data
-	 * @return array
+	 * @param array<string, mixed> $data
+	 * @return array<string, string>
 	 */
 	private function buildMetaData(array $data): array {
 		$metaData = $data;

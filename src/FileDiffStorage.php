@@ -7,9 +7,9 @@ use DataDiff\Exceptions\InvalidSchemaException;
 class FileDiffStorage extends DiffStorage {
 	/**
 	 * @param string|null $filename
-	 * @param array $keySchema
-	 * @param array $valueSchema
-	 * @param array $options
+	 * @param array<string, string> $keySchema
+	 * @param array<string, string> $valueSchema
+	 * @param array<string, mixed> $options
 	 *
 	 * @throws EmptySchemaException
 	 * @throws InvalidSchemaException
@@ -18,7 +18,7 @@ class FileDiffStorage extends DiffStorage {
 		if($filename === null) {
 			$filename = tempnam(sys_get_temp_dir(), 'data-diff-');
 		}
-		$this->createFile($filename);
+		$this->createFile((string) $filename);
 		$options['dsn'] = sprintf('sqlite:%s', $filename);
 		parent::__construct($keySchema, $valueSchema, $options);
 	}
@@ -26,10 +26,10 @@ class FileDiffStorage extends DiffStorage {
 	/**
 	 * @param string $filename
 	 */
-	private function createFile(string $filename) {
+	private function createFile(string $filename): void {
 		$fp = null;
 		try {
-			$fp = fopen($filename, 'w+');
+			$fp = fopen($filename, 'wb+');
 		} finally {
 			if(is_resource($fp)) {
 				fclose($fp);

@@ -3,12 +3,12 @@ namespace DataDiff;
 
 use DataDiff\Exceptions\InvalidSchemaException;
 use DataDiff\Helpers\JsonSerializeTestObj;
-use DataDiff\Tools\StringTools;
+use DataDiff\Tools\Json;
 use PHPUnit\Framework\TestCase;
 
 class MemoryDiffStorageTest extends TestCase {
 	/** @var MemoryDiffStorage */
-	private $ds = null;
+	private $ds;
 
 	/**
 	 */
@@ -36,7 +36,7 @@ class MemoryDiffStorageTest extends TestCase {
 
 	/**
 	 */
-	public function testUnchanged() {
+	public function testUnchanged(): void {
 		$ds = new MemoryDiffStorage(['key' => MemoryDiffStorage::INT], ['val' => MemoryDiffStorage::INT]);
 		$ds->storeA()->addRow(['key' => 1, 'val' => 1]);
 		$ds->storeA()->addRow(['key' => 2, 'val' => 1]);
@@ -45,108 +45,108 @@ class MemoryDiffStorageTest extends TestCase {
 		$ds->storeB()->addRow(['key' => 2, 'val' => 2]);
 		$ds->storeB()->addRow(['key' => 3, 'val' => 2]);
 		$res = iterator_to_array($ds->storeB()->getUnchanged());
-		$this->assertCount(1, $res);
+		self::assertCount(1, $res);
 		foreach($res as $value) {
-			$this->assertEquals(1, $value['key']);
-			$this->assertEquals('Unchanged key: 1', (string) $value);
+			self::assertEquals(1, $value['key']);
+			self::assertEquals('Unchanged key: 1', (string) $value);
 			return;
 		}
-		$this->assertTrue(false);
+		self::assertTrue(false);
 	}
 
 	/**
 	 */
-	public function testNew() {
+	public function testNew(): void {
 		$res = $this->ds->storeA()->getNew();
 		foreach($res as $key => $value) {
-			$this->assertEquals(501, $value['client_id']);
+			self::assertEquals(501, $value['client_id']);
 			return;
 		}
-		$this->assertTrue(false);
+		self::assertTrue(false);
 	}
 
 	/**
 	 */
-	public function testNewStringRepresentation() {
+	public function testNewStringRepresentation(): void {
 		foreach($this->ds->storeA()->getNew() as $row) {
-			$this->assertEquals('New client_id: 501 (client_id: 501, description: "Dies ist ein Test", total: 59.98999, a: null)', (string) $row);
+			self::assertEquals('New client_id: 501 (client_id: 501, description: "Dies ist ein Test", total: 59.98999, a: null)', (string) $row);
 		}
 		$ds = new MemoryDiffStorage(['a' => 'STRING'], ['b' => 'STRING']);
 		$ds->storeA()->addRow(['a' => 1, 'b' => '0']);
 		$ds->storeB()->addRow(['a' => 1, 'b' => null]);
 		foreach($ds->storeB()->getChanged() as $row) {
-			$this->assertEquals('Changed a: 1 => b: "0" -> null', (string) $row);
+			self::assertEquals('Changed a: 1 => b: "0" -> null', (string) $row);
 		}
 	}
 
 	/**
 	 */
-	public function testChanges() {
+	public function testChanges(): void {
 		$res = $this->ds->storeA()->getChanged();
 		foreach($res as $key => $value) {
-			$this->assertEquals(50, $value['client_id']);
+			self::assertEquals(50, $value['client_id']);
 			return;
 		}
-		$this->assertTrue(false);
+		self::assertTrue(false);
 	}
 
 	/**
 	 */
-	public function testChangeStringRepresentation() {
+	public function testChangeStringRepresentation(): void {
 		foreach($this->ds->storeA()->getChanged() as $row) {
-			$this->assertEquals('Changed client_id: 50 => total: "59.99" -> "60.00"', (string) $row);
+			self::assertEquals('Changed client_id: 50 => total: "59.99" -> "60.00"', (string) $row);
 		}
 	}
 
 	/**
 	 */
-	public function testMissing() {
+	public function testMissing(): void {
 		$res = $this->ds->storeA()->getMissing();
 		foreach($res as $key => $value) {
-			$this->assertEquals(1, $value['client_id']);
+			self::assertEquals(1, $value['client_id']);
 			return;
 		}
-		$this->assertTrue(false);
+		self::assertTrue(false);
 	}
 
 	/**
 	 */
-	public function testMissingStringRepresentation() {
+	public function testMissingStringRepresentation(): void {
 		foreach($this->ds->storeA()->getMissing() as $row) {
-			$this->assertEquals('Missing client_id: 1 (client_id: 1, description: "Dies ist ein Test", total: 59.98999, a: null)', (string) $row);
+			self::assertEquals('Missing client_id: 1 (client_id: 1, description: "Dies ist ein Test", total: 59.98999, a: null)', (string) $row);
 		}
 	}
 
 	/**
 	 */
-	public function testGetNewOrChangedOrMissing() {
+	public function testGetNewOrChangedOrMissing(): void {
 		$res = $this->ds->storeA()->getNewOrChangedOrMissing();
 		foreach($res as $idx => $value) {
 			if($idx === 0) {
-				$this->assertEquals(['client_id' => 50, 'description' => 'Dies ist ein Test', 'total' => 60, 'a' => null, 'test' => 0], $value->getData());
+				self::assertEquals(['client_id' => 50, 'description' => 'Dies ist ein Test', 'total' => 60, 'a' => null, 'test' => 0], $value->getData());
 			}
 			if($idx === 1) {
-				$this->assertEquals(['client_id' => 501, 'description' => 'Dies ist ein Test', 'total' => 59.98999, 'a' => null, 'test' => 1], $value->getData());
+				self::assertEquals(['client_id' => 501, 'description' => 'Dies ist ein Test', 'total' => 59.98999, 'a' => null, 'test' => 1], $value->getData());
 			}
 			if($idx === 2) {
-				$this->assertEquals(['client_id' => 1, 'description' => 'Dies ist ein Test', 'total' => 59.98999, 'a' => null, 'test' => 1], $value->getForeignData());
+				self::assertEquals(['client_id' => 1, 'description' => 'Dies ist ein Test', 'total' => 59.98999, 'a' => null, 'test' => 1], $value->getForeignData());
 				return;
 			}
 		}
-		$this->assertTrue(false);
+		self::assertTrue(false);
 	}
 
 	/**
 	 */
-	public function testHasAnyChnges() {
-		$this->assertTrue($this->ds->storeB()->hasAnyChanges());
+	public function testHasAnyChnges(): void {
+		self::assertTrue($this->ds->storeB()->hasAnyChanges());
 		$emptyDs = new MemoryDiffStorage(['key' => MemoryDiffStorage::INT], ['val' => MemoryDiffStorage::INT]);
-		$this->assertFalse($emptyDs->storeB()->hasAnyChanges());
+		self::assertFalse($emptyDs->storeB()->hasAnyChanges());
 	}
 
 	/**
 	 */
-	public function testGetData() {
+	public function testGetData(): void {
 		$ds = new MemoryDiffStorage(['a' => MemoryDiffStorage::INT], ['b' => MemoryDiffStorage::INT]);
 		$ds->storeA()->addRow(['a' => 1, 'b' => 1, 'c' => 1]);
 		$ds->storeA()->addRow(['a' => 2, 'b' => 2, 'c' => 1]);
@@ -155,22 +155,22 @@ class MemoryDiffStorageTest extends TestCase {
 		$ds->storeB()->addRow(['a' => 2, 'b' => 2, 'c' => 2]);
 		$ds->storeB()->addRow(['a' => 3, 'b' => 2, 'c' => 1]);
 		foreach($ds->storeB()->getChanged() as $row) {
-			$this->assertEquals(['a' => 3, 'b' => 2, 'c' => 1], $row->getData());
+			self::assertEquals(['a' => 3, 'b' => 2, 'c' => 1], $row->getData());
 		}
 		foreach($ds->storeB()->getChanged() as $row) {
-			$this->assertEquals(['b' => 2, 'c' => 1], $row->getData(['only-differences' => true]));
+			self::assertEquals(['b' => 2, 'c' => 1], $row->getData(['only-differences' => true]));
 		}
 		foreach($ds->storeB()->getChanged() as $row) {
-			$this->assertEquals(['a' => 3, 'b' => 2], $row->getData(['only-schema-fields' => true]));
+			self::assertEquals(['a' => 3, 'b' => 2], $row->getData(['only-schema-fields' => true]));
 		}
 		foreach($ds->storeB()->getChanged() as $row) {
-			$this->assertEquals(['b' => 2], $row->getData(['only-differences' => true, 'only-schema-fields' => true]));
+			self::assertEquals(['b' => 2], $row->getData(['only-differences' => true, 'only-schema-fields' => true]));
 		}
 	}
 
 	/**
 	 */
-	public function testDuplicateBehavior() {
+	public function testDuplicateBehavior(): void {
 		$ds = new MemoryDiffStorage([
 			'key' => MemoryDiffStorage::INT,
 		], [
@@ -181,16 +181,16 @@ class MemoryDiffStorageTest extends TestCase {
 		$ds->storeA()->addRow(['key' => 10, 'value' => 30]);
 
 		foreach($ds->storeA() as $key => $value) {
-			$this->assertEquals(10, $value['key']);
-			$this->assertEquals(30, $value['value']);
+			self::assertEquals(10, $value['key']);
+			self::assertEquals(30, $value['value']);
 			return;
 		}
-		$this->assertTrue(false);
+		self::assertTrue(false);
 	}
 
 	/**
 	 */
-	public function testGetArguments() {
+	public function testGetArguments(): void {
 		$ds = new MemoryDiffStorage([
 			'key' => MemoryDiffStorage::INT,
 		], [
@@ -202,20 +202,20 @@ class MemoryDiffStorageTest extends TestCase {
 			$ds->storeB()->addRow(['key' => $i * 2, 'value' => $i]);
 		}
 
-		$this->assertCount(50, iterator_to_array($ds->storeB()->getNew()));
-		$this->assertCount(49, iterator_to_array($ds->storeB()->getChanged()));
-		$this->assertCount(99, iterator_to_array($ds->storeB()->getNewOrChanged()));
-		$this->assertCount(50, iterator_to_array($ds->storeB()->getMissing()));
+		self::assertCount(50, iterator_to_array($ds->storeB()->getNew()));
+		self::assertCount(49, iterator_to_array($ds->storeB()->getChanged()));
+		self::assertCount(99, iterator_to_array($ds->storeB()->getNewOrChanged()));
+		self::assertCount(50, iterator_to_array($ds->storeB()->getMissing()));
 
-		$this->assertCount(10, iterator_to_array($ds->storeB()->getNew(['limit' => 10])));
-		$this->assertCount(10, iterator_to_array($ds->storeB()->getChanged(['limit' => 10])));
-		$this->assertCount(10, iterator_to_array($ds->storeB()->getNewOrChanged(['limit' => 10])));
-		$this->assertCount(10, iterator_to_array($ds->storeB()->getMissing(['limit' => 10])));
+		self::assertCount(10, iterator_to_array($ds->storeB()->getNew(['limit' => 10])));
+		self::assertCount(10, iterator_to_array($ds->storeB()->getChanged(['limit' => 10])));
+		self::assertCount(10, iterator_to_array($ds->storeB()->getNewOrChanged(['limit' => 10])));
+		self::assertCount(10, iterator_to_array($ds->storeB()->getMissing(['limit' => 10])));
 	}
 
 	/**
 	 */
-	public function testDuplicateKeyHandlerBehavior() {
+	public function testDuplicateKeyHandlerBehavior(): void {
 		$ds = new MemoryDiffStorage([
 			'key' => MemoryDiffStorage::INT,
 		], [
@@ -231,16 +231,16 @@ class MemoryDiffStorageTest extends TestCase {
 		$ds->storeA()->addRow(['key' => 10, 'value' => 30]);
 
 		foreach($ds->storeA() as $key => $value) {
-			$this->assertEquals(10, $value['key']);
-			$this->assertEquals(50, $value['value']);
+			self::assertEquals(10, $value['key']);
+			self::assertEquals(50, $value['value']);
 			return;
 		}
-		$this->assertTrue(false);
+		self::assertTrue(false);
 	}
 
 	/**
 	 */
-	public function testMD5() {
+	public function testMD5(): void {
 		$ds = new MemoryDiffStorage([
 			'key' => MemoryDiffStorage::INT,
 		], [
@@ -250,16 +250,16 @@ class MemoryDiffStorageTest extends TestCase {
 		$ds->storeA()->addRow(['key' => 10, 'value' => 'Hello World']);
 
 		foreach($ds->storeA() as $key => $value) {
-			$this->assertEquals(10, $value['key']);
-			$this->assertEquals('Hello World', $value['value']);
+			self::assertEquals(10, $value['key']);
+			self::assertEquals('Hello World', $value['value']);
 			return;
 		}
-		$this->assertTrue(false);
+		self::assertTrue(false);
 	}
 
 	/**
 	 */
-	public function testTranslation() {
+	public function testTranslation(): void {
 		$ds = new MemoryDiffStorage([
 			'key' => MemoryDiffStorage::INT,
 		], [
@@ -269,16 +269,16 @@ class MemoryDiffStorageTest extends TestCase {
 		$ds->storeA()->addRow(['id' => 10, 'greeting' => 'Hello World'], ['id' => 'key', 'greeting' => 'value']);
 
 		foreach($ds->storeA() as $key => $value) {
-			$this->assertEquals(10, $value['key']);
-			$this->assertEquals('Hello World', $value['value']);
+			self::assertEquals(10, $value['key']);
+			self::assertEquals('Hello World', $value['value']);
 			return;
 		}
-		$this->assertTrue(false);
+		self::assertTrue(false);
 	}
 
 	/**
 	 */
-	public function testRowStringRepresentation() {
+	public function testRowStringRepresentation(): void {
 		$ds = new MemoryDiffStorage([
 			'key' => MemoryDiffStorage::STR,
 		], [
@@ -288,15 +288,15 @@ class MemoryDiffStorageTest extends TestCase {
 		$ds->storeA()->addRow(['key' => 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr', 'value' => 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr']);
 
 		foreach($ds->storeA()->getNew() as $row) {
-			$this->assertEquals('New key: "Lorem ipsum dolor sit amet, consetetur sadipscing elitr" (value: "Lorem ipsum do...adipscing elitr")', (string) $row);
+			self::assertEquals('New key: "Lorem ipsum dolor sit amet, consetetur sadipscing elitr" (value: "Lorem ipsum do...adipscing elitr")', (string) $row);
 			return;
 		}
-		$this->assertTrue(false);
+		self::assertTrue(false);
 	}
 
 	/**
 	 */
-	public function testCount() {
+	public function testCount(): void {
 		$ds = new MemoryDiffStorage([
 			'key' => MemoryDiffStorage::INT,
 		], [
@@ -307,13 +307,13 @@ class MemoryDiffStorageTest extends TestCase {
 			$ds->storeA()->addRow(['key' => $i, 'value' => 'Hello World']);
 		}
 
-		$this->assertEquals(100, $ds->storeA()->count());
-		$this->assertEquals(100, count($ds->storeA()));
+		self::assertEquals(100, $ds->storeA()->count());
+		self::assertCount(100, $ds->storeA());
 	}
 
 	/**
 	 */
-	public function testGetDataOptionKeys() {
+	public function testGetDataOptionKeys(): void {
 		$ds = new MemoryDiffStorage([
 			'key' => MemoryDiffStorage::INT,
 		], [
@@ -324,15 +324,15 @@ class MemoryDiffStorageTest extends TestCase {
 		$ds->storeA()->addRow(['key' => 1, 'a' => 1, 'b' => 2, 'c' => 3]);
 		$rows = $ds->storeA()->getNew();
 		foreach($rows as $row) {
-			$this->assertEquals(['a' => 1, 'b' => 2], $row->getData(['keys' => ['a', 'b']]));
+			self::assertEquals(['a' => 1, 'b' => 2], $row->getData(['keys' => ['a', 'b']]));
 			return;
 		}
-		$this->assertTrue(false);
+		self::assertTrue(false);
 	}
 
 	/**
 	 */
-	public function testGetDataOptionIgnore() {
+	public function testGetDataOptionIgnore(): void {
 		$ds = new MemoryDiffStorage([
 			'key' => MemoryDiffStorage::INT,
 		], [
@@ -343,15 +343,15 @@ class MemoryDiffStorageTest extends TestCase {
 		$ds->storeA()->addRow(['key' => 1, 'a' => 1, 'b' => 2, 'c' => 3]);
 		$rows = $ds->storeA()->getNew();
 		foreach($rows as $row) {
-			$this->assertEquals(['key' => 1, 'c' => 3], $row->getData(['ignore' => ['a', 'b']]));
+			self::assertEquals(['key' => 1, 'c' => 3], $row->getData(['ignore' => ['a', 'b']]));
 			return;
 		}
-		$this->assertTrue(false);
+		self::assertTrue(false);
 	}
 
 	/**
 	 */
-	public function testLocalData() {
+	public function testLocalData(): void {
 		$ds = new MemoryDiffStorage([
 			'key' => MemoryDiffStorage::INT,
 		], [
@@ -362,16 +362,16 @@ class MemoryDiffStorageTest extends TestCase {
 		$ds->storeA()->addRow(['key' => 1, 'a' => 1, 'b' => 2, 'c' => 3]);
 		$rows = $ds->storeA()->getNew();
 		foreach($rows as $row) {
-			$this->assertEquals(['key' => 1], $row->getLocal()->getKeyData());
-			$this->assertEquals(['a' => 1, 'b' => 2, 'c' => 3], $row->getLocal()->getValueData());
+			self::assertEquals(['key' => 1], $row->getLocal()->getKeyData());
+			self::assertEquals(['a' => 1, 'b' => 2, 'c' => 3], $row->getLocal()->getValueData());
 			return;
 		}
-		$this->assertTrue(false);
+		self::assertTrue(false);
 	}
 
 	/**
 	 */
-	public function testStdClass() {
+	public function testStdClass(): void {
 		$ds = new MemoryDiffStorage([
 			'key' => MemoryDiffStorage::INT,
 		], [
@@ -384,12 +384,12 @@ class MemoryDiffStorageTest extends TestCase {
 		];
 		$ds->storeA()->addRows(array_map(function ($entry) { return (object) $entry; }, $srcData));
 		$data = iterator_to_array($ds->storeA());
-		$this->assertEquals($srcData, $data);
+		self::assertEquals($srcData, $data);
 	}
 
 	/**
 	 */
-	public function testJsonSerialize() {
+	public function testJsonSerialize(): void {
 		$ds = new MemoryDiffStorage([
 			'key' => MemoryDiffStorage::INT,
 		], [
@@ -402,12 +402,12 @@ class MemoryDiffStorageTest extends TestCase {
 		];
 		$ds->storeA()->addRows(array_map(function ($entry) { return new JsonSerializeTestObj($entry); }, $srcData));
 		$data = iterator_to_array($ds->storeA());
-		$this->assertEquals($srcData, $data);
+		self::assertEquals($srcData, $data);
 	}
 
 	/**
 	 */
-	public function testFalsySchema() {
+	public function testFalsySchema(): void {
 		self::expectException(InvalidSchemaException::class);
 		new MemoryDiffStorage([
 			'key' => MemoryDiffStorage::INT,
@@ -419,32 +419,32 @@ class MemoryDiffStorageTest extends TestCase {
 
 	/**
 	 */
-	public function testCorruptUtf8() {
+	public function testCorruptUtf8(): void {
 		$ds = new MemoryDiffStorage([
 			'key' => MemoryDiffStorage::INT,
 		], [
 			'value' => MemoryDiffStorage::STR,
 		]);
-		$this->assertEquals('null', StringTools::jsonEncode(null));
-		$this->assertEquals('123', StringTools::jsonEncode(123));
-		$this->assertEquals('123.45', StringTools::jsonEncode(123.45));
-		$this->assertEquals('"abc"', StringTools::jsonEncode('abc'));
-		$this->assertEquals('[1,2,3]', StringTools::jsonEncode([1,2,3]));
-		$this->assertEquals('"bbb' . chr(0xEF) . chr(0xBF) . chr(0xBD) . 'xx"', StringTools::jsonEncode('bbb' . chr(197) . 'xxx'));
+		self::assertEquals('null', Json::encode(null));
+		self::assertEquals('123', Json::encode(123));
+		self::assertEquals('123.45', Json::encode(123.45));
+		self::assertEquals('"abc"', Json::encode('abc'));
+		self::assertEquals('[1,2,3]', Json::encode([1,2,3]));
+		self::assertEquals('"bbb' . chr(0xEF) . chr(0xBF) . chr(0xBD) . 'xx"', Json::encode('bbb' . chr(197) . 'xxx'));
 		$ds->storeA()->addRow(['key' => 1, 'value' => 'aaa' . chr(197)]);
 		$ds->storeB()->addRow(['key' => 1, 'value' => 'bbb' . chr(197)]);
 		foreach($ds->storeB()->getChanged() as $row) {
-			$this->assertEquals(1, $row['key']);
-			$this->assertEquals('bbb' . chr(197), $row['value']);
-			$this->assertEquals(['value' => ['local' => 'bbb' . chr(197), 'foreign' => 'aaa' . chr(197)]], $row->getDiff());
+			self::assertEquals(1, $row['key']);
+			self::assertEquals('bbb' . chr(197), $row['value']);
+			self::assertEquals(['value' => ['local' => 'bbb' . chr(197), 'foreign' => 'aaa' . chr(197)]], $row->getDiff());
 			return;
 		}
-		$this->assertTrue(false);
+		self::assertTrue(false);
 	}
 
 	/**
 	 */
-	public function testHandleMissingKeys() {
+	public function testHandleMissingKeys(): void {
 		$ds = new MemoryDiffStorage([
 			'key' => MemoryDiffStorage::INT,
 		], [
@@ -463,7 +463,7 @@ class MemoryDiffStorageTest extends TestCase {
 			'a' => 3,
 			'b' => 2,
 		]);
-		call_user_func(function () use ($ds) {
+		call_user_func(static function () use ($ds) {
 			foreach($ds->storeB()->getChanged() as $row) {
 				$expectedResult = [
 					'a' => [
@@ -475,12 +475,12 @@ class MemoryDiffStorageTest extends TestCase {
 						'foreign' => 3,
 					]
 				];
-				$this->assertEquals($expectedResult, $row->getDiff());
+				self::assertEquals($expectedResult, $row->getDiff());
 				return;
 			}
-			$this->assertTrue(false);
+			self::assertTrue(false);
 		});
-		call_user_func(function () use ($ds) {
+		call_user_func(static function () use ($ds) {
 			foreach($ds->storeA()->getChanged() as $row) {
 				$expectedResult = [
 					'a' => [
@@ -492,10 +492,10 @@ class MemoryDiffStorageTest extends TestCase {
 						'foreign' => null,
 					]
 				];
-				$this->assertEquals($expectedResult, $row->getDiff());
+				self::assertEquals($expectedResult, $row->getDiff());
 				return;
 			}
-			$this->assertTrue(false);
+			self::assertTrue(false);
 		});
 	}
 }

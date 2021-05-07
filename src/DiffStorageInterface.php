@@ -3,7 +3,7 @@ namespace DataDiff;
 
 interface DiffStorageInterface {
 	/**
-	 * @return array
+	 * @return string[]
 	 */
 	public function getKeys(): array;
 
