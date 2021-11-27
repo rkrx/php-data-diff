@@ -29,13 +29,13 @@ interface DiffStorageStoreRowDataInterface {
 	public function getValueData(array $options = []): array;
 
 	/**
-	 * @param null|string[] $fields
+	 * @param null|array<string, mixed> $fields
 	 * @return array<string, array{local: mixed, foreign: mixed}>
 	 */
 	public function getDiff(?array $fields = null): array;
 
 	/**
-	 * @param null|string[] $fields
+	 * @param null|array<string, mixed> $fields
 	 * @param null|string $format
 	 * @return string
 	 * @throws Exception

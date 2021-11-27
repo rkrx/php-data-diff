@@ -17,6 +17,7 @@ class JsonSerializeTestObj implements JsonSerializable {
 	/**
 	 * @return mixed
 	 */
+	#[\ReturnTypeWillChange]
 	public function jsonSerialize() {
 		return $this->data;
 	}

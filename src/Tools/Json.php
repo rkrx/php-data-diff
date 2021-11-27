@@ -25,17 +25,18 @@ class Json {
 	}
 
 	/**
-	 * @param mixed $data
-	 * @return string
+	 * @param mixed $data Input could be anything from scalar values to objects and arrays
+	 * @return mixed Pretty much the same as the input, except that objects are converted to arrays
 	 */
 	private static function fixEncoding($data) {
 		if(is_object($data)) {
 			$data = (array) $data;
 		}
 		if(is_array($data)) {
-			foreach($data as &$value) {
-				$value = self::fixEncoding($value);
-			}
+			$fn = static function ($value) {
+				return self::fixEncoding($value);
+			};
+			$data = array_map($fn, $data);
 		} elseif(is_string($data)) {
 			$result = '';
 			$enc = 'UTF-8';

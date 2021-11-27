@@ -8,7 +8,7 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	private $localData;
 	/** @var DiffStorageStoreRowData */
 	private $foreignRowData;
-	/** @var callable */
+	/** @var callable(DiffStorageStoreRow): string */
 	private $stringFormatter;
 
 	/**
@@ -17,7 +17,7 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	 * @param string[] $keys
 	 * @param string[] $valueKeys
 	 * @param array<string, callable(mixed): (scalar|null)> $converter
-	 * @param callable $stringFormatter
+	 * @param callable(DiffStorageStoreRow): string $stringFormatter
 	 */
 	public function __construct(?array $localData, ?array $foreignData, array $keys, array $valueKeys, array $converter, callable $stringFormatter) {
 		if($localData !== null) {
@@ -123,6 +123,8 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	 * @return string
 	 */
 	public function __toString(): string {
-		return (string) call_user_func($this->stringFormatter, $this);
+		$result = call_user_func($this->stringFormatter, $this);
+		/** @var string $result */
+		return (string) $result;
 	}
 }

@@ -167,8 +167,9 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	}
 
 	/**
-	 * @param array<string, mixed> $row
-	 * @return array<string, null|string>
+	 * @template T
+	 * @param array<string, T> $row
+	 * @return array<string, T|null>
 	 */
 	private function formatRow(array $row): array {
 		$schema = $this->converter;

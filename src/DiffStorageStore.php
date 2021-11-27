@@ -9,6 +9,8 @@ use JsonSerializable;
 use PDO;
 use PDOException;
 use PDOStatement;
+use Stringable;
+use Traversable;
 use stdClass;
 
 class DiffStorageStore implements DiffStorageStoreInterface {
@@ -82,12 +84,9 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 					$metaData = $this->buildMetaData($data);
 					unset($metaData['___data'], $metaData['___sort']);
 					$this->selectStmt->execute($metaData);
+					/** @var string|null $oldData */
 					$oldData = $this->selectStmt->fetch(PDO::FETCH_COLUMN, 0);
-					if($oldData === null) {
-						$oldData = [];
-					} else {
-						$oldData = unserialize($oldData);
-					}
+					$oldData = is_string($oldData) ? self::unserialize($oldData) : [];
 					$data = $duplicateKeyHandler($data, $oldData);
 					$metaData = $this->buildMetaData($data);
 					unset($metaData['___sort']);
@@ -109,6 +108,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 			} elseif($row instanceof JsonSerializable) {
 				$row = $row->jsonSerialize();
 			}
+			/** @var array<string, bool|float|int|string|null> $row */
 			$this->addRow($row, $translation, $duplicateKeyHandler);
 		}
 		return $this;
@@ -133,7 +133,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 * @inheritDoc
 	 */
 	public function getUnchanged(array $arguments = []) {
-		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
+		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", (string) $arguments['limit']) : "";
 		return $this->query("
 			SELECT
 				s1.s_key AS k,
@@ -291,14 +291,17 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 * @param callable $stringFormatter
 	 * @return Generator<int, DiffStorageStoreRow>
 	 */
-	private function query(string $query, callable $stringFormatter) {
+	private function query(string $query, callable $stringFormatter): Generator {
 		$stmt = $this->pdo->query($query);
 		yield from PDOTools::useStmt($stmt, function (PDOStatement $stmt) use ($stringFormatter) {
 			$stmt->execute(['sA' => $this->storeA, 'sB' => $this->storeB]);
 			while($row = $stmt->fetch(PDO::FETCH_NUM)) {
-				$d = unserialize($row[1]);
-				$f = unserialize($row[2]);
-				yield $this->instantiateRow($d !== false ? $d : null, $f !== false ? $f : null, $stringFormatter);
+				/** @var array<int, string|null> $row */
+				/** @var array<string, string|null> $d */
+				$d = self::unserialize($row[1] ?? 'N;');
+				/** @var array<string, string|null> $f */
+				$f = self::unserialize($row[2] ?? 'N;');
+				yield $this->instantiateRow($d, $f, $stringFormatter);
 			}
 		});
 	}
@@ -306,7 +309,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	/**
 	 * @inheritDoc
 	 */
-	public function getIterator() {
+	public function getIterator(): Traversable {
 		$query = '
 			SELECT
 				s1.s_data AS d
@@ -320,10 +323,13 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 		$stmt = $this->pdo->query($query);
 		yield from PDOTools::useStmt($stmt, function (PDOStatement $stmt) {
 			$stmt->execute(['s' => $this->storeA]);
-			while($row = $stmt->fetch(PDO::FETCH_NUM)) {
-				$row = unserialize($row[0]);
+			while($dbRow = $stmt->fetch(PDO::FETCH_NUM)) {
+				/** @var array<int, string|null> $dbRow */
+				/** @var array<string, string|null> $row */
+				$row = self::unserialize($dbRow[0] ?? 'N;');
 				$row = $this->instantiateRow($row, [], function (DiffStorageStoreRowInterface $row) {
-					return $this->formatKeyValuePairs($row->getData());
+					$data = $row->getData();
+					return $this->formatKeyValuePairs($data);
 				});
 				yield $row->getData();
 			}
@@ -333,7 +339,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	/**
 	 * @param array<string, mixed> $data
 	 * @param null|array<string, string> $translation
-	 * @return array<string, string>
+	 * @return array<string, mixed>
 	 */
 	private function translate(array $data, ?array $translation = null): array {
 		if($translation !== null) {
@@ -357,7 +363,9 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 		$stmt = $this->pdo->query($query);
 		return PDOTools::useStmt($stmt, function (PDOStatement $stmt) {
 			$stmt->execute(['s' => $this->storeA]);
-			return (int) $stmt->fetch(PDO::FETCH_COLUMN, 0);
+			/** @var string|null $result */
+			$result = $stmt->fetch(PDO::FETCH_COLUMN, 0);
+			return (int) $result;
 		});
 	}
 
@@ -410,7 +418,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @param array<string, string> $keyValues
+	 * @param array<string, mixed> $keyValues
 	 * @param bool $shortenLongValues
 	 * @return string
 	 */
@@ -427,7 +435,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 
 	/**
 	 * @param array<string, mixed> $data
-	 * @return array<string, string>
+	 * @return array<string, mixed>
 	 */
 	private function buildMetaData(array $data): array {
 		$metaData = $data;
@@ -435,5 +443,18 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 		$metaData['___data'] = serialize($data);
 		$metaData['___sort'] = $this->counter;
 		return $metaData;
+	}
+
+	/**
+	 * @param string $data
+	 * @return array<mixed, mixed>|null
+	 */
+	private static function unserialize(string $data): ?array {
+		/** @var array<mixed, mixed>|false $result */
+		$result = unserialize($data, ['allowed_classes' => true]);
+		if($result === false) {
+			return null;
+		}
+		return $result;
 	}
 }

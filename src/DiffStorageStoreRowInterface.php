@@ -54,6 +54,7 @@ interface DiffStorageStoreRowInterface extends JsonSerializable, ArrayAccess {
 	/**
 	 * @return array<string, mixed>
 	 */
+	#[\ReturnTypeWillChange]
 	public function jsonSerialize();
 
 	/**
@@ -66,6 +67,7 @@ interface DiffStorageStoreRowInterface extends JsonSerializable, ArrayAccess {
 	 * @param string $offset
 	 * @return mixed
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetGet($offset);
 
 	/**

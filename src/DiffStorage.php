@@ -41,7 +41,9 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	 */
 	public function __construct(array $keySchema, array $valueSchema, array $options) {
 		$options = $this->defineOptionDefaults($options);
-		$this->pdo = new PDO($options['dsn'], null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+		$dsn = $options['dsn'] ?? null;
+		$dsn = is_string($dsn) ? $dsn : 'sqlite::memory:';
+		$this->pdo = new PDO($dsn, null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 		$this->initSqlite();
 		$this->compatibility();
 		$this->buildTables();
@@ -57,8 +59,11 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 
 		$converter = array_merge($keyConverter, $valueConverter);
 
-		$this->storeA = new DiffStorageStore($this->pdo, $sqlKeySchema, $sqlValueSchema, $this->keys, $valueKeys, $converter, 'a', 'b', $options['duplicate_key_handler']);
-		$this->storeB = new DiffStorageStore($this->pdo, $sqlKeySchema, $sqlValueSchema, $this->keys, $valueKeys, $converter, 'b', 'a', $options['duplicate_key_handler']);
+		$duplicateKeyHandler = $options['duplicate_key_handler'] ?? null;
+		$duplicateKeyHandler = is_callable($duplicateKeyHandler) ? $duplicateKeyHandler : null;
+
+		$this->storeA = new DiffStorageStore($this->pdo, $sqlKeySchema, $sqlValueSchema, $this->keys, $valueKeys, $converter, 'a', 'b', $duplicateKeyHandler);
+		$this->storeB = new DiffStorageStore($this->pdo, $sqlKeySchema, $sqlValueSchema, $this->keys, $valueKeys, $converter, 'b', 'a', $duplicateKeyHandler);
 	}
 
 	/**
@@ -179,7 +184,8 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 				$this->registerUDFunction('md5', 'md5');
 			}
 		} catch (Exception $e) {
-			throw new RuntimeException($e->getMessage(), (int) $e->getCode(), $e);
+			$code = $e->getCode();
+			throw new RuntimeException($e->getMessage(), is_int($code) ? $code : 0, $e);
 		}
 	}
 
