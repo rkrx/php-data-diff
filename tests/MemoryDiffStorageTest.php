@@ -3,7 +3,9 @@ namespace DataDiff;
 
 use DataDiff\Exceptions\InvalidSchemaException;
 use DataDiff\Helpers\JsonSerializeTestObj;
+use DataDiff\TestData\AnnotatedModel;
 use DataDiff\Tools\Json;
+use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
 class MemoryDiffStorageTest extends TestCase {
@@ -498,5 +500,11 @@ class MemoryDiffStorageTest extends TestCase {
 			self::assertTrue(false);
 		});
 	}
-}
 
+	public function testMemoryDiffStoreFromModel(): void {
+		$model = new AnnotatedModel('abc', 5, true, 9.99, new DateTimeImmutable('2022-07-26 12:00:00'));
+		$ds = MemoryDiffStorage::fromModelWithAttributes($model);
+		self::assertEquals(['id'], $ds->getKeys());
+		$ds->storeA()->addAnnotatedModel($model, AnnotatedModel::class);
+	}
+}

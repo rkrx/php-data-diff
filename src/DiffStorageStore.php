@@ -3,13 +3,13 @@ namespace DataDiff;
 
 use DataDiff\Tools\Json;
 use DataDiff\Tools\PDOTools;
+use DataDiff\Tools\ModelTools;
 use DataDiff\Tools\StringTools;
 use Generator;
 use JsonSerializable;
 use PDO;
 use PDOException;
 use PDOStatement;
-use Stringable;
 use Traversable;
 use stdClass;
 
@@ -111,6 +111,18 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 			/** @var array<string, bool|float|int|string|null> $row */
 			$this->addRow($row, $translation, $duplicateKeyHandler);
 		}
+		return $this;
+	}
+
+	/**
+	 * @template T of object
+	 * @param object $model
+	 * @param class-string<T>|null $className
+	 * @return $this
+	 */
+	public function addAnnotatedModel($model, ?string $className = null) {
+		$data = ModelTools::getValuesFromModel($model, $className);
+		$this->addRow($data);
 		return $this;
 	}
 
