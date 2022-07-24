@@ -33,21 +33,24 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	}
 
 	/**
-	 * @inheritDoc
+	 * @param array<string, mixed> $options
+	 * @return array<string, mixed>
 	 */
 	public function getData(array $options = []): array {
 		return $this->applyOptions($this->row, $options);
 	}
 
 	/**
-	 * @inheritDoc
+	 * @param array<string, mixed> $options
+	 * @return array<string, mixed>
 	 */
 	public function getForeignData(array $options = []): array {
 		return $this->applyOptions($this->foreignRow, $options);
 	}
 
 	/**
-	 * @inheritDoc
+	 * @param array<string, mixed> $options
+	 * @return array<string, mixed>
 	 */
 	public function getKeyData(array $options = []): array {
 		$row = $this->getData($options);
@@ -56,7 +59,8 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	}
 
 	/**
-	 * @inheritDoc
+	 * @param array<string, mixed> $options
+	 * @return array<string, mixed>
 	 */
 	public function getValueData(array $options = []): array {
 		$row = $this->getData($options);
@@ -65,7 +69,8 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	}
 
 	/**
-	 * @inheritDoc
+	 * @param null|array<string, mixed> $fields
+	 * @return array<string, array{local: mixed, foreign: mixed}>
 	 */
 	public function getDiff(?array $fields = null): array {
 		$diff = [];

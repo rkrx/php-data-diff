@@ -65,7 +65,9 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @inheritDoc
+	 * @param array<string, mixed> $data
+	 * @param null|array<string, string> $translation
+	 * @param null|callable(array<string, null|scalar>, array<string, null|scalar>): array<string, null|scalar> $duplicateKeyHandler
 	 */
 	public function addRow(array $data, ?array $translation = null, ?callable $duplicateKeyHandler = null): void {
 		$data = $this->translate($data, $translation);
@@ -99,7 +101,10 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @inheritDoc
+	 * @param iterable<int, array<string, mixed>|object|JsonSerializable> $rows
+	 * @param null|array<string, string> $translation
+	 * @param null|callable(array<string, mixed>, array<string, null|scalar>): array<string, null|scalar> $duplicateKeyHandler
+	 * @return $this
 	 */
 	public function addRows($rows, ?array $translation = null, ?callable $duplicateKeyHandler = null) {
 		foreach($rows as $row) {
@@ -127,7 +132,9 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @inheritDoc
+	 * Returns true whenever there is any changed, added or removed data available
+	 *
+	 * @return bool
 	 */
 	public function hasAnyChanges(): bool {
 		/** @noinspection PhpUnusedLocalVariableInspection */
@@ -142,7 +149,10 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @inheritDoc
+	 * Get all rows, that have a different value hash in the other store
+	 *
+	 * @param array<string, int|string> $arguments
+	 * @return Traversable<int, DiffStorageStoreRow>
 	 */
 	public function getUnchanged(array $arguments = []) {
 		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", (string) $arguments['limit']) : "";
@@ -168,7 +178,10 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @inheritDoc
+	 * Get all rows, that are present in this store, but not in the other
+	 *
+	 * @param array<string, int|string> $arguments
+	 * @return Traversable<int, DiffStorageStoreRow>
 	 */
 	public function getNew(array $arguments = []) {
 		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
@@ -194,7 +207,10 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @inheritDoc
+	 * Get all rows, that have a different value hash in the other store
+	 *
+	 * @param array<string, int|string> $arguments
+	 * @return Traversable<int, DiffStorageStoreRow>
 	 */
 	public function getChanged(array $arguments = []) {
 		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
@@ -220,7 +236,11 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @inheritDoc
+	 * Get all rows, that are present in this store, but not in the other and
+	 * get all rows, that have a different value hash in the other store
+	 *
+	 * @param array<string, int|string> $arguments
+	 * @return Traversable<int, DiffStorageStoreRow>
 	 */
 	public function getNewOrChanged(array $arguments = []) {
 		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
@@ -249,7 +269,10 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @inheritDoc
+	 * Get all rows, that are present in the other store, but not in this
+	 *
+	 * @param array<string, int|string> $arguments
+	 * @return Traversable<int, DiffStorageStoreRow>
 	 */
 	public function getMissing(array $arguments = []) {
 		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
@@ -275,7 +298,12 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @inheritDoc
+	 * Get all rows, that are present in this store, but not in the other and
+	 * get all rows, that have a different value hash in the other store and
+	 * get all rows, that are present in the other store, but not in this
+	 *
+	 * @param array<string, int|string> $arguments
+	 * @return Traversable<int, DiffStorageStoreRow>
 	 */
 	public function getNewOrChangedOrMissing(array $arguments = []) {
 		// Do not use `yield from` here, since the key (index) will start at 0 with getMissing()
@@ -319,7 +347,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @inheritDoc
+	 * @return Traversable<int, array<string, mixed>>
 	 */
 	public function getIterator(): Traversable {
 		$query = '

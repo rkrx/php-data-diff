@@ -47,28 +47,41 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	}
 
 	/**
-	 * @inheritDoc
+	 * `$options` are:
+	 * * `keys`: Only these keys are considered and returned
+	 * * `ignore`: These keys are ignored and omitted
+	 *
+	 * @param array<string, mixed> $options
+	 * @return array<string, mixed>
 	 */
 	public function getData(array $options = []): array {
 		return $this->localData->getData($options);
 	}
 
 	/**
-	 * @inheritDoc
+	 * `$options` are:
+	 * * `keys`: Only these keys are considered and returned
+	 * * `ignore`: These keys are ignored and omitted
+	 *
+	 * @param array<string, mixed> $options
+	 * @return array<string, mixed>
 	 */
 	public function getForeignData(array $options = []): array {
 		return $this->foreignRowData->getData($options);
 	}
 
 	/**
-	 * @inheritDoc
+	 * @param null|string[] $fields
+	 * @return array<string, array{local: mixed, foreign: mixed}>
 	 */
 	public function getDiff(?array $fields = null): array {
 		return $this->localData->getDiff($fields);
 	}
 
 	/**
-	 * @inheritDoc
+	 * @param null|array<string, mixed> $fields
+	 * @param null|string $format
+	 * @return string
 	 */
 	public function getDiffFormatted(?array $fields = null, ?string $format = null): string {
 		return $this->localData->getDiffFormatted($fields, $format);
