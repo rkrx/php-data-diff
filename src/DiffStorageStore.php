@@ -360,6 +360,11 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 				if(array_key_exists($key, $translation)) {
 					$key = $translation[$key];
 				}
+
+				if(is_object($value) && method_exists($value, '__toString')) {
+					$value = (string) $value;
+				}
+
 				$result[$key] = $value;
 			}
 			return $result;
