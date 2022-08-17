@@ -5,6 +5,7 @@ use DataDiff\Tools\Json;
 use DataDiff\Tools\PDOTools;
 use DataDiff\Tools\ModelTools;
 use DataDiff\Tools\StringTools;
+use DateTimeInterface;
 use Generator;
 use JsonSerializable;
 use PDO;
@@ -397,6 +398,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 			}
 			return $result;
 		}
+
 		return $data;
 	}
 
@@ -484,6 +486,13 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 */
 	private function buildMetaData(array $data): array {
 		$metaData = $data;
+
+		foreach($metaData as $key => $value) {
+			if($value instanceof DateTimeInterface) {
+				$metaData[$key] = $value->format('c');
+			}
+		}
+
 		$metaData = array_diff_key($metaData, array_diff_key($metaData, $this->converter));
 		$metaData['___data'] = serialize($data);
 		$metaData['___sort'] = $this->counter;

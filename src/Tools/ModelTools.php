@@ -45,9 +45,6 @@ class ModelTools {
 		foreach(self::getAnnotationsFromObject($model, $className) as [$property, $attribute]) {
 			$key = $attribute->fieldName ?? $property->getName();
 			$value = $property->getValue($model);
-			if($value instanceof DateTimeInterface) {
-				$value = $value->format($attribute->options['date_format'] ?? 'c');
-			}
 			$values[$key] = $value;
 		}
 		return $values;
