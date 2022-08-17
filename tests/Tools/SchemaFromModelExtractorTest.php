@@ -8,8 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 class SchemaFromModelExtractorTest extends TestCase {
 	public function testExtractSchemaFromModel(): void {
-		$model = new AnnotatedModel('abc', 5, true, 9.99, new DateTimeImmutable('2022-07-26 12:00:00'));
-		[$keySchema, $valueSchema] = ModelTools::getSchemaFromModel($model);
+		[$keySchema, $valueSchema] = ModelTools::getSchemaFromModel(AnnotatedModel::class);
 		self::assertEquals(['id' => 'STR'], $keySchema);
 		self::assertEquals(['quantity' => 'INT', 'active' => 'BOOL', 'amount' => 'MONEY', 'created_at' => 'STR'], $valueSchema);
 	}

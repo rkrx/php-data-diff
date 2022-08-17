@@ -502,8 +502,8 @@ class MemoryDiffStorageTest extends TestCase {
 	}
 
 	public function testMemoryDiffStoreFromModel(): void {
+		$ds = MemoryDiffStorage::fromModelWithAttributes(AnnotatedModel::class);
 		$model = new AnnotatedModel('abc', 5, true, 9.99, new DateTimeImmutable('2022-07-26 12:00:00'));
-		$ds = MemoryDiffStorage::fromModelWithAttributes($model);
 		self::assertEquals(['id'], $ds->getKeys());
 		$ds->storeA()->addAnnotatedModel($model, AnnotatedModel::class);
 	}

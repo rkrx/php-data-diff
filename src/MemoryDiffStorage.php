@@ -7,15 +7,15 @@ use DataDiff\Tools\ModelTools;
 
 class MemoryDiffStorage extends DiffStorage {
 	/**
-	 * @param object $model
+	 * @param class-string $fqClassName
 	 * @param array<string, mixed> $options
 	 * @return self
 	 *
 	 * @throws EmptySchemaException
 	 * @throws InvalidSchemaException
 	 */
-	public static function fromModelWithAttributes($model, array $options = []): self {
-		[$keySchema, $valueSchema] = ModelTools::getSchemaFromModel($model);
+	public static function fromModelWithAttributes(string $fqClassName, array $options = []): self {
+		[$keySchema, $valueSchema] = ModelTools::getSchemaFromModel($fqClassName);
 		return new self($keySchema, $valueSchema, $options);
 	}
 

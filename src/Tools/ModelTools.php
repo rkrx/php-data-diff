@@ -16,13 +16,13 @@ class ModelTools {
 	private static $classPropertyCache = [];
 
 	/**
-	 * @param object $model
+	 * @param class-string $fqClassName
 	 * @return array{array<string, string>, array<string, string>}
 	 */
-	public static function getSchemaFromModel($model) {
+	public static function getSchemaFromModel(string $fqClassName) {
 		$keySchema = [];
 		$valueSchema = [];
-		foreach(self::getAnnotationsFromObject($model) as [$property, $attribute]) {
+		foreach(self::getAnnotationsFromClass($fqClassName) as [$property, $attribute]) {
 			$key = $attribute->fieldName ?? $property->getName();
 			/** @var DataDiffProp $attribute */
 			if($attribute->isKey) {
