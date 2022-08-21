@@ -4,6 +4,7 @@ namespace DataDiff;
 use DataDiff\Exceptions\EmptySchemaException;
 use DataDiff\Exceptions\InvalidSchemaException;
 use DataDiff\Tools\PDOTools;
+use DateTimeInterface;
 use Exception;
 use PDO;
 use PDOException;
@@ -159,7 +160,12 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 					break;
 				case 'STR':
 				case 'STRING':
-					$def[$name] = function ($value) { return $value !== null ? (string) $value : null; };
+					$def[$name] = function ($value) {
+						if($value instanceof DateTimeInterface) {
+							return $value->format('c');
+						}
+						return $value !== null ? (string) $value : null;
+					};
 					break;
 				case 'MD5':
 					$def[$name] = function ($value) { return md5((string) $value); };
