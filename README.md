@@ -1,7 +1,6 @@
 # data-diff
 
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/rkrx/data-diff/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/rkrx/data-diff/?branch=master)
-[![Build Status](https://travis-ci.com/rkrx/php-data-diff.svg?branch=master&status=passed)](https://travis-ci.com/rkrx/php-data-diff)
 [![Latest Stable Version](https://poser.pugx.org/rkr/data-diff/v/stable)](https://packagist.org/packages/rkr/data-diff)
 [![License](https://poser.pugx.org/rkr/data-diff/license)](https://packagist.org/packages/rkr/data-diff)
 
