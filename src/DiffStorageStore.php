@@ -75,6 +75,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 		if($duplicateKeyHandler === null) {
 			$duplicateKeyHandler = $this->duplicateKeyHandler;
 		}
+		$this->counter++;
 		$metaData = $this->buildMetaData($data);
 		/** @var callable|null $duplicateKeyHandler */
 		if($duplicateKeyHandler === null) {
