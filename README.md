@@ -10,6 +10,15 @@ A handy tool for comparing structured data quickly in a key-value manner
 
 [See here](https://packagist.org/packages/rkr/data-diff)
 
+## Support for PHPStan
+
+Add the following to your `phpstan.neon` file:
+
+```neon
+includes:
+	- vendor/rkr/data-diff/extension.neon
+```
+
 ## WTF
 
 This component is interesting for you, if you have a lot of structured data to import into a local database (for example) and you don't want to overwrite everything on each run. Instead, you want to know, what actually has changed and act accordingly.
@@ -118,17 +127,18 @@ Here is a example:
 
 ```PHP
 <?php
+use DataDiff\MemoryDiffStorageBuilderFactory;
 use DataDiff\MemoryDiffStorage;
 
 require 'vendor/autoload.php';
 
-$ds = new MemoryDiffStorage([
-	'reference' => 'STRING',
-], [
-	'name' => 'STRING',
-	'price' => 'MONEY',
-	'stock' => 'INT',
-]);
+$factory = new MemoryDiffStorageBuilderFactory();
+$ds = $factory->createBuilder()
+    ->addStringKey('reference')
+    ->addStringValue('name')
+    ->addMoneyValue('price')
+    ->addIntValue('stock')
+    ->build();
 
 $ds->storeA()->addRow(['name' => 'Some Notebook', 'reference' => 'B0001', 'price' => '1499.90', 'stock' => '1254', 'last-change' => '2016-04-01T10:00:00+02:00']);
 $ds->storeA()->addRow(['name' => 'A Hairdryer', 'reference' => 'C0001', 'price' => '49.95', 'stock' => '66', 'last-change' => '2016-04-01T10:00:00+02:00']);
@@ -188,16 +198,17 @@ print_r($row->getLocal()->getValueData());
 
 ```PHP
 <?php
+use DataDiff\MemoryDiffStorageBuilderFactory;
 use DataDiff\MemoryDiffStorage;
 
 require 'vendor/autoload.php';
 
-$ds = new MemoryDiffStorage([
-	'client_id' => 'INT',
-], [
-	'description' => 'STRING',
-	'total' => 'MONEY',
-]);
+$factory = new MemoryDiffStorageBuilderFactory();
+$ds = $factory->createBuilder()
+    ->addIntKey('client_id')
+    ->addStringValue('description')
+    ->addMoneyValue('total')
+    ->build();
 
 for($i=2; $i <= 501; $i++) {
 	$row = ['client_id' => $i, 'description' => 'This is a test', 'total' => $i === 50 ? 60 : 59.98999, 'test' => $i % 2];
