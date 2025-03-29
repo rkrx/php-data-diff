@@ -7,5 +7,6 @@
 !/LICENSE
 !/README.md
 !/composer.json
+!/extension.neon
 !/phpstan.neon
 !/tests.xml

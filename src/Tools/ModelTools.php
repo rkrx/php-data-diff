@@ -3,7 +3,6 @@
 namespace DataDiff\Tools;
 
 use DataDiff\Attributes\DataDiffProp;
-use DateTimeInterface;
 use ReflectionClass;
 use ReflectionObject;
 use ReflectionProperty;
@@ -13,13 +12,13 @@ use ReflectionProperty;
  */
 class ModelTools {
 	/** @var array<string, array<int, array{ReflectionProperty, DataDiffProp}>> */
-	private static $classPropertyCache = [];
+	private static array $classPropertyCache = [];
 
 	/**
 	 * @param class-string $fqClassName
 	 * @return array{array<string, string>, array<string, string>}
 	 */
-	public static function getSchemaFromModel(string $fqClassName) {
+	public static function getSchemaFromModel(string $fqClassName): array {
 		$keySchema = [];
 		$valueSchema = [];
 		foreach(self::getAnnotationsFromClass($fqClassName) as [$property, $attribute]) {
@@ -87,9 +86,10 @@ class ModelTools {
 	 * @param ReflectionObject|ReflectionClass<T> $input
 	 * @return array<int, array{ReflectionProperty, DataDiffProp}>
 	 */
-	private static function getAnnotationsFromClassOrObject($input): array {
+	private static function getAnnotationsFromClassOrObject(ReflectionObject|ReflectionClass $input): array {
 		$result = [];
 		foreach($input->getProperties() as $refProperty) {
+			// @phpstan-ignore-next-line
 			if(!method_exists($refProperty, 'getAttributes')) {
 				continue;
 			}

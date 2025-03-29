@@ -1,23 +1,32 @@
 <?php
 namespace DataDiff;
 
+/**
+ * @template TLocal of array<string, mixed>
+ * @template TForeign of array<string, mixed>
+ *
+ * @phpstan-import-type TConverter from DiffStorageStoreRowDataInterface
+ * @phpstan-import-type TStringFormatterFn from DiffStorageStoreRowDataInterface
+ *
+ * @implements DiffStorageStoreRowInterface<TLocal, TForeign>
+ */
 class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	/** @var array<string, mixed> */
-	private $data = [];
-	/** @var DiffStorageStoreRowData */
-	private $localData;
-	/** @var DiffStorageStoreRowData */
-	private $foreignRowData;
-	/** @var callable(DiffStorageStoreRow): string */
+	private array $data = [];
+	/** @var DiffStorageStoreRowData<TLocal, TForeign> */
+	private DiffStorageStoreRowData $localData;
+	/** @var DiffStorageStoreRowData<TForeign, TLocal> */
+	private DiffStorageStoreRowData $foreignRowData;
+	/** @var TStringFormatterFn */
 	private $stringFormatter;
 
 	/**
-	 * @param null|array<string, mixed> $localData
-	 * @param null|array<string, mixed> $foreignData
+	 * @param TLocal $localData
+	 * @param TForeign $foreignData
 	 * @param string[] $keys
 	 * @param string[] $valueKeys
-	 * @param array<string, callable(mixed): (scalar|null)> $converter
-	 * @param callable(DiffStorageStoreRow): string $stringFormatter
+	 * @param array<string, TConverter> $converter
+	 * @param TStringFormatterFn $stringFormatter
 	 */
 	public function __construct(?array $localData, ?array $foreignData, array $keys, array $valueKeys, array $converter, callable $stringFormatter) {
 		if($localData !== null) {
@@ -25,24 +34,33 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 		} elseif($foreignData !== null) {
 			$this->data = $foreignData;
 		}
+
 		$localData = is_array($localData) ? $localData : [];
 		$foreignData = is_array($foreignData) ? $foreignData : [];
-		$this->localData = new DiffStorageStoreRowData($localData, $foreignData, $keys, $valueKeys, $converter);
-		$this->foreignRowData = new DiffStorageStoreRowData($foreignData, $localData, $keys, $valueKeys, $converter);
+
+		/** @var DiffStorageStoreRowData<TLocal, TForeign> $localRowData */
+		$localRowData = new DiffStorageStoreRowData($localData, $foreignData, $keys, $valueKeys, $converter);
+		$this->localData = $localRowData;
+
+		/** @var DiffStorageStoreRowData<TForeign, TLocal> $foreignRowData */
+		$foreignRowData = new DiffStorageStoreRowData($foreignData, $localData, $keys, $valueKeys, $converter);
+		$this->foreignRowData = $foreignRowData;
+
+		// @phpstan-ignore-next-line
 		$this->stringFormatter = $stringFormatter;
 	}
 
 	/**
-	 * @return DiffStorageStoreRowData
+	 * @return DiffStorageStoreRowData<TLocal, TForeign>
 	 */
-	public function getLocal() {
+	public function getLocal(): DiffStorageStoreRowData {
 		return $this->localData;
 	}
 
 	/**
-	 * @return DiffStorageStoreRowData
+	 * @return DiffStorageStoreRowData<TForeign, TLocal>
 	 */
-	public function getForeign() {
+	public function getForeign(): DiffStorageStoreRowData {
 		return $this->foreignRowData;
 	}
 
@@ -52,7 +70,7 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	 * * `ignore`: These keys are ignored and omitted
 	 *
 	 * @param array<string, mixed> $options
-	 * @return array<string, mixed>
+	 * @return TLocal
 	 */
 	public function getData(array $options = []): array {
 		return $this->localData->getData($options);
@@ -64,7 +82,7 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	 * * `ignore`: These keys are ignored and omitted
 	 *
 	 * @param array<string, mixed> $options
-	 * @return array<string, mixed>
+	 * @return TForeign
 	 */
 	public function getForeignData(array $options = []): array {
 		return $this->foreignRowData->getData($options);
@@ -72,14 +90,14 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 
 	/**
 	 * @param null|string[] $fields
-	 * @return array<string, array{local: mixed, foreign: mixed}>
+	 * @return array<string, array{local: TLocal, foreign: TForeign}>
 	 */
 	public function getDiff(?array $fields = null): array {
 		return $this->localData->getDiff($fields);
 	}
 
 	/**
-	 * @param null|array<string, mixed> $fields
+	 * @param null|string[] $fields
 	 * @param null|string $format
 	 * @return string
 	 */

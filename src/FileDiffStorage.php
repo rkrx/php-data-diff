@@ -4,12 +4,23 @@ namespace DataDiff;
 use DataDiff\Exceptions\EmptySchemaException;
 use DataDiff\Exceptions\InvalidSchemaException;
 
+/**
+ * @template TKeySpec of array<string, mixed>
+ * @phpstan-type TKeyOfKeySpec key-of<TKeySpec>
+ *
+ * @template TValueSpec of array<string, mixed>
+ * @phpstan-type TKeyOfValueSpec key-of<TValueSpec>
+ *
+ * @template TExtraSpec of array<string, mixed>
+ *
+ * @extends DiffStorage<TKeySpec, TValueSpec, TExtraSpec>
+ */
 class FileDiffStorage extends DiffStorage {
 	/**
 	 * @param string|null $filename
-	 * @param array<string, string> $keySchema
-	 * @param array<string, string> $valueSchema
-	 * @param array<string, mixed> $options
+	 * @param array<TKeyOfKeySpec, string> $keySchema
+	 * @param array<TKeyOfValueSpec, string> $valueSchema
+	 * @param array{dsn?: string} $options
 	 *
 	 * @throws EmptySchemaException
 	 * @throws InvalidSchemaException

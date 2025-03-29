@@ -12,29 +12,26 @@ use PDOStatement;
 use RuntimeException;
 
 /**
- * @package DataDiff
+ * @template TKeySpec of array<string, mixed>
+ * @template TValueSpec of array<string, mixed>
+ * @template TExtraSpec of array<string, mixed>
+ *
+ * @phpstan-type TKeysOfKeySpec key-of<TKeySpec>
+ *
+ * @implements DiffStorageInterface<TKeySpec, TValueSpec, TExtraSpec>
  */
 abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldTypeConstants {
-	/** @var PDO */
-	private $pdo;
-	/** @var DiffStorageStore */
-	private $storeA;
-	/** @var DiffStorageStore */
-	private $storeB;
-	/** @var string[] */
-	private $keys;
+	private PDO $pdo;
+	/** @var DiffStorageStore<TKeySpec, TValueSpec&TExtraSpec, TKeySpec&TValueSpec&TExtraSpec> */
+	private DiffStorageStore $storeA;
+	/** @var DiffStorageStore<TKeySpec, TValueSpec&TExtraSpec, TKeySpec&TValueSpec&TExtraSpec> */
+	private DiffStorageStore $storeB;
+	/** @var TKeysOfKeySpec[] */
+	private array $keys;
 
 	/**
-	 * Predefined types:
-	 *     - integer
-	 *     - string
-	 *     - bool
-	 *     - float
-	 *     - double
-	 *     - money
-	 *
-	 * @param array<string, string> $keySchema
-	 * @param array<string, string> $valueSchema
+	 * @param array<key-of<TKeySpec>, string> $keySchema
+	 * @param array<key-of<TValueSpec>, string> $valueSchema
 	 * @param array<string, mixed> $options
 	 *
 	 * @throws EmptySchemaException
@@ -63,26 +60,49 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 		$duplicateKeyHandler = $options['duplicate_key_handler'] ?? null;
 		$duplicateKeyHandler = is_callable($duplicateKeyHandler) ? $duplicateKeyHandler : null;
 
-		$this->storeA = new DiffStorageStore($this->pdo, $sqlKeySchema, $sqlValueSchema, $this->keys, $valueKeys, $converter, 'a', 'b', $duplicateKeyHandler);
-		$this->storeB = new DiffStorageStore($this->pdo, $sqlKeySchema, $sqlValueSchema, $this->keys, $valueKeys, $converter, 'b', 'a', $duplicateKeyHandler);
+		// @phpstan-ignore-next-line
+		$this->storeA = new DiffStorageStore(
+			pdo: $this->pdo,
+			keySchema: $sqlKeySchema,
+			valueSchema: $sqlValueSchema,
+			keys: $this->keys,
+			valueKeys: $valueKeys,
+			converter: $converter,
+			storeA: 'a',
+			storeB: 'b',
+			duplicateKeyHandler: $duplicateKeyHandler
+		);
+
+		// @phpstan-ignore-next-line
+		$this->storeB = new DiffStorageStore(
+			pdo: $this->pdo,
+			keySchema: $sqlKeySchema,
+			valueSchema: $sqlValueSchema,
+			keys: $this->keys,
+			valueKeys: $valueKeys,
+			converter: $converter,
+			storeA: 'b',
+			storeB: 'a',
+			duplicateKeyHandler: $duplicateKeyHandler
+		);
 	}
 
 	/**
-	 * @return string[]
+	 * @return TKeysOfKeySpec[]
 	 */
 	public function getKeys(): array {
 		return $this->keys;
 	}
 
 	/**
-	 * @return DiffStorageStore
+	 * @return DiffStorageStore<TKeySpec, TValueSpec&TExtraSpec, TKeySpec&TValueSpec&TExtraSpec>
 	 */
 	public function storeA(): DiffStorageStore {
 		return $this->storeA;
 	}
 
 	/**
-	 * @return DiffStorageStore
+	 * @return DiffStorageStore<TKeySpec, TValueSpec&TExtraSpec, TKeySpec&TValueSpec&TExtraSpec>
 	 */
 	public function storeB(): DiffStorageStore {
 		return $this->storeB;
@@ -140,39 +160,21 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	private function buildConverter(array $schema): array {
 		$def = [];
 		foreach($schema as $name => $type) {
-			switch ($type) {
-				case 'BOOL':
-				case 'BOOLEAN':
-					$def[$name] = 'boolval';
-					break;
-				case 'INT':
-				case 'INTEGER':
-					$def[$name] = 'intval';
-					break;
-				case 'FLOAT':
-					$def[$name] = function ($value) { return $value !== null ? (float) number_format((float) $value, 6, '.', '') : null; };
-					break;
-				case 'DOUBLE':
-					$def[$name] = function ($value) { return $value !== null ? (double) number_format((double) $value, 12, '.', '') : null; };
-					break;
-				case 'MONEY':
-					$def[$name] = function ($value) { return $value !== null ? number_format((float) $value, 2, '.', '') : null; };
-					break;
-				case 'STR':
-				case 'STRING':
-					$def[$name] = function ($value) {
-						if($value instanceof DateTimeInterface) {
-							return $value->format('c');
-						}
-						return $value !== null ? (string) $value : null;
-					};
-					break;
-				case 'MD5':
-					$def[$name] = function ($value) { return md5((string) $value); };
-					break;
-				default:
-					throw new InvalidSchemaException("Invalid type: {$type}");
-			}
+			$def[$name] = match ($type) {
+				'BOOL', 'BOOLEAN' => static fn($value) => is_scalar($value) ? (bool) $value : null,
+				'INT', 'INTEGER' => static fn($value) => is_scalar($value) ? (int) $value : null,
+				'FLOAT' => static fn($value) => is_scalar($value) ? (float) number_format((float) $value, 6, '.', '') : null,
+				'DOUBLE' => static fn($value) => is_scalar($value) ? (double) number_format((double) $value, 12, '.', '') : null,
+				'MONEY' => static fn($value) => is_scalar($value) ? number_format((float) $value, 2, '.', '') : null,
+				'STR', 'STRING' => static function($value) {
+					if($value instanceof DateTimeInterface) {
+						return $value->format('c');
+					}
+					return is_scalar($value) ? (string) $value : null;
+				},
+				'MD5' => static fn($value) => is_scalar($value) ? md5((string) $value) : null,
+				default => throw new InvalidSchemaException("Invalid type: {$type}")
+			};
 		}
 		return $def;
 	}
@@ -202,10 +204,8 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	private function testStatement(string $query): bool {
 		try {
 			$stmt = $this->pdo->query($query);
-			return PDOTools::useStmt($stmt, function (PDOStatement $stmt) {
-				return $stmt->execute() !== false;
-			});
-		} catch (PDOException $e) {
+			return PDOTools::useStmt($stmt, static fn(PDOStatement $stmt) => $stmt->execute() !== false);
+		} catch (PDOException) {
 			return false;
 		}
 	}
@@ -216,9 +216,11 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	 * @throws Exception
 	 */
 	private function registerUDFunction(string $name, $callback): void {
+		// @phpstan-ignore-next-line
 		if(!method_exists($this->pdo, 'sqliteCreateFunction')) {
 			throw new Exception('It is not possible to create user defined functions for rkr/data-diff\'s sqlite instance');
 		}
+		// @phpstan-ignore-next-line
 		call_user_func([$this->pdo, 'sqliteCreateFunction'], $name, $callback);
 	}
 
@@ -227,8 +229,11 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	private function initSqlite(): void {
 		$tryThis = function ($query) {
 			try {
+				if(!is_string($query)) {
+					throw new Exception('Query is not a string');
+				}
 				$this->pdo->exec($query);
-			} catch (Exception $e) {
+			} catch (Exception) {
 				// If the execution failed, go on anyways
 			}
 		};

@@ -3,18 +3,21 @@ namespace DataDiff;
 
 use JsonSerializable;
 use ArrayAccess;
+use ReturnTypeWillChange;
 
 /**
+ * @template Local of array<string, mixed>
+ * @template Foreign of array<string, mixed>
  * @extends ArrayAccess<string, mixed>
  */
 interface DiffStorageStoreRowInterface extends JsonSerializable, ArrayAccess {
 	/**
-	 * @return DiffStorageStoreRowDataInterface
+	 * @return DiffStorageStoreRowDataInterface<Local, Foreign>
 	 */
 	public function getLocal();
 
 	/**
-	 * @return DiffStorageStoreRowDataInterface
+	 * @return DiffStorageStoreRowDataInterface<Local, Foreign>
 	 */
 	public function getForeign();
 
@@ -24,7 +27,7 @@ interface DiffStorageStoreRowInterface extends JsonSerializable, ArrayAccess {
 	 * * `ignore`: These keys are ignored and omitted
 	 *
 	 * @param array<string, mixed> $options
-	 * @return array<string, mixed>
+	 * @return Local
 	 */
 	public function getData(array $options = []): array;
 
@@ -34,7 +37,7 @@ interface DiffStorageStoreRowInterface extends JsonSerializable, ArrayAccess {
 	 * * `ignore`: These keys are ignored and omitted
 	 *
 	 * @param array<string, mixed> $options
-	 * @return array<string, mixed>
+	 * @return Foreign
 	 */
 	public function getForeignData(array $options = []): array;
 
@@ -54,31 +57,31 @@ interface DiffStorageStoreRowInterface extends JsonSerializable, ArrayAccess {
 	/**
 	 * @return array<string, mixed>
 	 */
-	#[\ReturnTypeWillChange]
+	#[ReturnTypeWillChange]
 	public function jsonSerialize();
 
 	/**
-	 * @param string $offset
+	 * @param key-of<Local> $offset
 	 * @return bool true on success or false on failure.
 	 */
 	public function offsetExists($offset): bool;
 
 	/**
-	 * @param string $offset
-	 * @return mixed
+	 * @param key-of<Local> $offset
+	 * @return value-of<Local>
 	 */
-	#[\ReturnTypeWillChange]
+	#[ReturnTypeWillChange]
 	public function offsetGet($offset);
 
 	/**
-	 * @param string $offset
-	 * @param mixed $value
+	 * @param key-of<Local> $offset
+	 * @param value-of<Local> $value
 	 * @return void
 	 */
 	public function offsetSet($offset, $value): void;
 
 	/**
-	 * @param string $offset
+	 * @param key-of<Local> $offset
 	 * @return void
 	 */
 	public function offsetUnset($offset): void;

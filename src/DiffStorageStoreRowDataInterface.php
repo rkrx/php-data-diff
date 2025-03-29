@@ -3,16 +3,23 @@ namespace DataDiff;
 
 use Exception;
 
+/**
+ * @template TLocal of array<string, mixed>
+ * @template TForeign of array<string, mixed>
+ *
+ * @phpstan-type TConverter callable(mixed): (scalar|null)
+ * @phpstan-type TStringFormatterFn callable(DiffStorageStoreRow<TLocal, TForeign>): string
+ */
 interface DiffStorageStoreRowDataInterface {
 	/**
 	 * @param array<string, mixed> $options
-	 * @return array<string, mixed>
+	 * @return TLocal
 	 */
 	public function getData(array $options = []): array;
 
 	/**
 	 * @param array<string, mixed> $options
-	 * @return array<string, mixed>
+	 * @return TForeign
 	 */
 	public function getForeignData(array $options = []): array;
 
@@ -35,7 +42,7 @@ interface DiffStorageStoreRowDataInterface {
 	public function getDiff(?array $fields = null): array;
 
 	/**
-	 * @param null|array<string, mixed> $fields
+	 * @param null|string[] $fields
 	 * @param null|string $format
 	 * @return string
 	 * @throws Exception

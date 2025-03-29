@@ -5,24 +5,32 @@ use DataDiff\Tools\Json;
 use DataDiff\Tools\StringTools;
 use RuntimeException;
 
+/**
+ * @template TLocal of array<string, mixed>
+ * @template TForeign of array<string, mixed>
+ *
+ * @phpstan-import-type TConverter from DiffStorageStoreRowDataInterface
+ *
+ * @implements DiffStorageStoreRowDataInterface<TLocal, TForeign>
+ */
 class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
-	/** @var array<string, mixed> */
-	private $row;
-	/** @var array<string, mixed> */
-	private $foreignRow;
+	/** @var TLocal */
+	private array $row;
+	/** @var TForeign */
+	private array $foreignRow;
 	/** @var string[] */
-	private $keys;
+	private array $keys;
 	/** @var string[] */
-	private $valueKeys;
-	/** @var array<string, callable(mixed): (scalar|null)> */
-	private $converter;
+	private array $valueKeys;
+	/** @var array<string, TConverter> */
+	private array $converter;
 
 	/**
-	 * @param array<string, mixed> $row
-	 * @param array<string, mixed> $foreignRow
+	 * @param TLocal $row
+	 * @param TForeign $foreignRow
 	 * @param string[] $keys
 	 * @param string[] $valueKeys
-	 * @param array<string, callable(mixed): (scalar|null)> $converter
+	 * @param array<string, TConverter> $converter
 	 */
 	public function __construct(array $row, array $foreignRow, array $keys, array $valueKeys, array $converter) {
 		$this->row = $row;
@@ -34,18 +42,22 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 
 	/**
 	 * @param array<string, mixed> $options
-	 * @return array<string, mixed>
+	 * @return TLocal
 	 */
 	public function getData(array $options = []): array {
-		return $this->applyOptions($this->row, $options);
+		/** @var TLocal $result */
+		$result = $this->applyOptions($this->row, $options);
+		return $result;
 	}
 
 	/**
 	 * @param array<string, mixed> $options
-	 * @return array<string, mixed>
+	 * @return TForeign
 	 */
 	public function getForeignData(array $options = []): array {
-		return $this->applyOptions($this->foreignRow, $options);
+		/** @var TForeign $result */
+		$result = $this->applyOptions($this->row, $options);
+		return $result;
 	}
 
 	/**
@@ -69,8 +81,8 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	}
 
 	/**
-	 * @param null|array<string, mixed> $fields
-	 * @return array<string, array{local: mixed, foreign: mixed}>
+	 * @param null|string[] $fields
+	 * @return array<string, array{local: TLocal, foreign: TForeign}>
 	 */
 	public function getDiff(?array $fields = null): array {
 		$diff = [];
@@ -86,7 +98,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 		$formattedLocalRow = $this->formatRow($localRow);
 		$formattedForeignRow = $this->formatRow($foreignRow);
 
-		$conv = function (array $row, $key) {
+		$conv = function (array $row, int|string $key) {
 			$value = null;
 			if(array_key_exists($key, $row)) {
 				$value = $row[$key];
@@ -115,6 +127,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 			}
 		}
 
+		/** @var array<string, array{local: TLocal, foreign: TForeign}> $diff */
 		return $diff;
 	}
 
@@ -151,10 +164,12 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 			return $row;
 		}
 		if(array_key_exists('keys', $options) && is_array($options['keys'])) {
+			/** @var array{keys: string[]} $options */
 			$keys = (array) array_combine($options['keys'], $options['keys']);
 			$row = array_intersect_key($row, $keys);
 		}
 		if(array_key_exists('ignore', $options) && is_array($options['ignore'])) {
+			/** @var array{ignore: string[]} $options */
 			$keys = (array) array_combine($options['ignore'], $options['ignore']);
 			$row = array_diff_key($row, $keys);
 		}

@@ -9,22 +9,22 @@ use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
 class MemoryDiffStorageTest extends TestCase {
-	/** @var MemoryDiffStorage */
-	private $ds;
+	/** @var MemoryDiffStorage<array{client_id: int|null}, array{description: string|null, total: float|null, a: int|null}, array{test: int|null}> */
+	private MemoryDiffStorage $ds;
 
 	/**
 	 */
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->ds = new MemoryDiffStorage([
-			'client_id' => MemoryDiffStorage::INT,
-		], [
-			'client_id' => MemoryDiffStorage::INT,
-			'description' => MemoryDiffStorage::STR,
-			'total' => MemoryDiffStorage::MONEY,
-			'a' => MemoryDiffStorage::INT,
-		]);
+		$this->ds = (new MemoryDiffStorageBuilderFactory())
+			->createBuilder()
+			->addIntKey('client_id')
+			->addStringValue('description')
+			->addMoneyValue('total')
+			->addIntValue('a')
+			->addIntExtra('test')
+			->build();
 
 		for($i=2; $i <= 501; $i++) {
 			$row = ['client_id' => $i, 'description' => 'Dies ist ein Test', 'total' => $i === 50 ? 60 : 59.98999, 'a' => null, 'test' => $i % 2];
@@ -53,6 +53,7 @@ class MemoryDiffStorageTest extends TestCase {
 			self::assertEquals('Unchanged key: 1', (string) $value);
 			return;
 		}
+		// @phpstan-ignore-next-line
 		self::assertTrue(false);
 	}
 
@@ -64,6 +65,7 @@ class MemoryDiffStorageTest extends TestCase {
 			self::assertEquals(501, $value['client_id']);
 			return;
 		}
+		// @phpstan-ignore-next-line
 		self::assertTrue(false);
 	}
 
@@ -89,6 +91,7 @@ class MemoryDiffStorageTest extends TestCase {
 			self::assertEquals(50, $value['client_id']);
 			return;
 		}
+		// @phpstan-ignore-next-line
 		self::assertTrue(false);
 	}
 
@@ -108,6 +111,7 @@ class MemoryDiffStorageTest extends TestCase {
 			self::assertEquals(1, $value['client_id']);
 			return;
 		}
+		// @phpstan-ignore-next-line
 		self::assertTrue(false);
 	}
 
@@ -135,6 +139,7 @@ class MemoryDiffStorageTest extends TestCase {
 				return;
 			}
 		}
+		// @phpstan-ignore-next-line
 		self::assertTrue(false);
 	}
 
@@ -187,6 +192,7 @@ class MemoryDiffStorageTest extends TestCase {
 			self::assertEquals(30, $value['value']);
 			return;
 		}
+		// @phpstan-ignore-next-line
 		self::assertTrue(false);
 	}
 
@@ -218,12 +224,14 @@ class MemoryDiffStorageTest extends TestCase {
 	/**
 	 */
 	public function testDuplicateKeyHandlerBehavior(): void {
+		/** @var MemoryDiffStorage<array{key: int}, array{value: int}, array{}> $ds */
 		$ds = new MemoryDiffStorage([
 			'key' => MemoryDiffStorage::INT,
 		], [
 			'value' => MemoryDiffStorage::INT,
 		], [
 			'duplicate_key_handler' => function (array $newData, array $oldData) {
+				// @phpstan-ignore-next-line
 				$newData['value'] = $newData['value'] + $oldData['value'];
 				return $newData;
 			}
@@ -237,6 +245,7 @@ class MemoryDiffStorageTest extends TestCase {
 			self::assertEquals(50, $value['value']);
 			return;
 		}
+		// @phpstan-ignore-next-line
 		self::assertTrue(false);
 	}
 
@@ -256,6 +265,7 @@ class MemoryDiffStorageTest extends TestCase {
 			self::assertEquals('Hello World', $value['value']);
 			return;
 		}
+		// @phpstan-ignore-next-line
 		self::assertTrue(false);
 	}
 
@@ -275,6 +285,7 @@ class MemoryDiffStorageTest extends TestCase {
 			self::assertEquals('Hello World', $value['value']);
 			return;
 		}
+		// @phpstan-ignore-next-line
 		self::assertTrue(false);
 	}
 
@@ -293,6 +304,7 @@ class MemoryDiffStorageTest extends TestCase {
 			self::assertEquals('New key: "Lorem ipsum dolor sit amet, consetetur sadipscing elitr" (value: "Lorem ipsum do...adipscing elitr")', (string) $row);
 			return;
 		}
+		// @phpstan-ignore-next-line
 		self::assertTrue(false);
 	}
 
@@ -329,6 +341,7 @@ class MemoryDiffStorageTest extends TestCase {
 			self::assertEquals(['a' => 1, 'b' => 2], $row->getData(['keys' => ['a', 'b']]));
 			return;
 		}
+		// @phpstan-ignore-next-line
 		self::assertTrue(false);
 	}
 
@@ -348,6 +361,7 @@ class MemoryDiffStorageTest extends TestCase {
 			self::assertEquals(['key' => 1, 'c' => 3], $row->getData(['ignore' => ['a', 'b']]));
 			return;
 		}
+		// @phpstan-ignore-next-line
 		self::assertTrue(false);
 	}
 
@@ -368,6 +382,7 @@ class MemoryDiffStorageTest extends TestCase {
 			self::assertEquals(['a' => 1, 'b' => 2, 'c' => 3], $row->getLocal()->getValueData());
 			return;
 		}
+		// @phpstan-ignore-next-line
 		self::assertTrue(false);
 	}
 
@@ -384,7 +399,7 @@ class MemoryDiffStorageTest extends TestCase {
 			['key' => 2, 'value' => 'TEST2'],
 			['key' => 3, 'value' => 'TEST3']
 		];
-		$ds->storeA()->addRows(array_map(function ($entry) { return (object) $entry; }, $srcData));
+		$ds->storeA()->addRows(array_map(static fn($entry) => (object) $entry, $srcData));
 		$data = iterator_to_array($ds->storeA());
 		self::assertEquals($srcData, $data);
 	}
@@ -402,7 +417,7 @@ class MemoryDiffStorageTest extends TestCase {
 			['key' => 2, 'value' => 'TEST2'],
 			['key' => 3, 'value' => 'TEST3']
 		];
-		$ds->storeA()->addRows(array_map(function ($entry) { return new JsonSerializeTestObj($entry); }, $srcData));
+		$ds->storeA()->addRows(array_map(static fn($entry) => new JsonSerializeTestObj($entry), $srcData));
 		$data = iterator_to_array($ds->storeA());
 		self::assertEquals($srcData, $data);
 	}
@@ -410,7 +425,7 @@ class MemoryDiffStorageTest extends TestCase {
 	/**
 	 */
 	public function testFalsySchema(): void {
-		self::expectException(InvalidSchemaException::class);
+		$this->expectException(InvalidSchemaException::class);
 		new MemoryDiffStorage([
 			'key' => MemoryDiffStorage::INT,
 		], [
@@ -441,6 +456,7 @@ class MemoryDiffStorageTest extends TestCase {
 			self::assertEquals(['value' => ['local' => 'bbb' . chr(197), 'foreign' => 'aaa' . chr(197)]], $row->getDiff());
 			return;
 		}
+		// @phpstan-ignore-next-line
 		self::assertTrue(false);
 	}
 
@@ -480,6 +496,7 @@ class MemoryDiffStorageTest extends TestCase {
 				self::assertEquals($expectedResult, $row->getDiff());
 				return;
 			}
+			// @phpstan-ignore-next-line
 			self::assertTrue(false);
 		});
 		call_user_func(static function () use ($ds) {
@@ -497,6 +514,7 @@ class MemoryDiffStorageTest extends TestCase {
 				self::assertEquals($expectedResult, $row->getDiff());
 				return;
 			}
+			// @phpstan-ignore-next-line
 			self::assertTrue(false);
 		});
 	}

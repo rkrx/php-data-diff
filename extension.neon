@@ -1,0 +1,10 @@
+services:
+	-
+	    class: DataDiff\PhpStan\MemoryDiffStorageBuilderTypeExtension
+	    tags:
+	        - phpstan.broker.dynamicMethodReturnTypeExtension
+
+	-
+	    class: DataDiff\PhpStan\MemoryDiffStorageTypeExtension
+	    tags:
+	        - phpstan.broker.dynamicMethodReturnTypeExtension

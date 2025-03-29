@@ -7,7 +7,9 @@ use Countable;
 use IteratorAggregate;
 
 /**
- * @extends IteratorAggregate<int, array<string, mixed>>
+ * @template TKeySpec of array<string, mixed>
+ * @template TValueSpec of array<string, mixed>
+ * @extends IteratorAggregate<TKeySpec&TValueSpec>
  */
 interface DiffStorageStoreInterface extends Countable, IteratorAggregate {
 	/**
@@ -36,7 +38,7 @@ interface DiffStorageStoreInterface extends Countable, IteratorAggregate {
 	 * Get all rows, that have a different value hash in the other store
 	 *
 	 * @param array<string, int|string> $arguments
-	 * @return Traversable<int, DiffStorageStoreRow>
+	 * @return Traversable<DiffStorageStoreRow<TKeySpec&TValueSpec, TKeySpec&TValueSpec>>
 	 */
 	public function getUnchanged(array $arguments = []);
 
@@ -44,7 +46,7 @@ interface DiffStorageStoreInterface extends Countable, IteratorAggregate {
 	 * Get all rows, that are present in this store, but not in the other
 	 *
 	 * @param array<string, int|string> $arguments
-	 * @return Traversable<int, DiffStorageStoreRow>
+	 * @return Traversable<DiffStorageStoreRow<TKeySpec&TValueSpec, TKeySpec&TValueSpec>>
 	 */
 	public function getNew(array $arguments = []);
 
@@ -52,7 +54,7 @@ interface DiffStorageStoreInterface extends Countable, IteratorAggregate {
 	 * Get all rows, that have a different value hash in the other store
 	 *
 	 * @param array<string, int|string> $arguments
-	 * @return Traversable<int, DiffStorageStoreRow>
+	 * @return Traversable<DiffStorageStoreRow<TKeySpec&TValueSpec, TKeySpec&TValueSpec>>
 	 */
 	public function getChanged(array $arguments = []);
 
@@ -61,7 +63,7 @@ interface DiffStorageStoreInterface extends Countable, IteratorAggregate {
 	 * get all rows, that have a different value hash in the other store
 	 *
 	 * @param array<string, int|string> $arguments
-	 * @return Traversable<int, DiffStorageStoreRow>
+	 * @return Traversable<DiffStorageStoreRow<TKeySpec&TValueSpec, TKeySpec&TValueSpec>>
 	 */
 	public function getNewOrChanged(array $arguments = []);
 
@@ -69,7 +71,7 @@ interface DiffStorageStoreInterface extends Countable, IteratorAggregate {
 	 * Get all rows, that are present in the other store, but not in this
 	 *
 	 * @param array<string, int|string> $arguments
-	 * @return Traversable<int, DiffStorageStoreRow>
+	 * @return Traversable<DiffStorageStoreRow<TKeySpec&TValueSpec, TKeySpec&TValueSpec>>
 	 */
 	public function getMissing(array $arguments = []);
 
@@ -79,7 +81,7 @@ interface DiffStorageStoreInterface extends Countable, IteratorAggregate {
 	 * get all rows, that are present in the other store, but not in this
 	 *
 	 * @param array<string, int|string> $arguments
-	 * @return Traversable<int, DiffStorageStoreRow>
+	 * @return Traversable<DiffStorageStoreRow<TKeySpec&TValueSpec, TKeySpec&TValueSpec>>
 	 */
 	public function getNewOrChangedOrMissing(array $arguments = []);
 
@@ -89,7 +91,7 @@ interface DiffStorageStoreInterface extends Countable, IteratorAggregate {
 	public function clearAll();
 
 	/**
-	 * @return Traversable<int, array<string, mixed>>
+	 * @return Traversable<TKeySpec&TValueSpec>
 	 */
 	public function getIterator(): Traversable;
 
