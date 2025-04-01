@@ -4,9 +4,10 @@
 !/.editorconfig
 !/.gitignore
 !/.travis.yml
-!/LICENSE
 !/README.md
 !/composer.json
 !/extension.neon
+!/INSTRUCTIONS.md
+!/LICENSE
 !/phpstan.neon
 !/tests.xml
