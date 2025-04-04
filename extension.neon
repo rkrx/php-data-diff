@@ -8,3 +8,8 @@ services:
 	    class: DataDiff\PhpStan\MemoryDiffStorageTypeExtension
 	    tags:
 	        - phpstan.broker.dynamicMethodReturnTypeExtension
+
+	-
+	    class: DataDiff\PhpStan\PHPStanDiscouragedNewClassUsageRule
+	    tags:
+	        - phpstan.broker.dynamicMethodReturnTypeExtension

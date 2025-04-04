@@ -29,9 +29,11 @@ assertType('DataDiff\\DiffStorageStore<array{id: int|null}, array{name: string|n
 
 $storeA->addRow(['id' => 1, 'name' => 'test']);
 
+// @phpstan-ignore-next-line
 $ds = new MemoryDiffStorage(['id' => MemoryDiffStorage::INT], ['name' => MemoryDiffStorage::STR]);
 assertType('DataDiff\\MemoryDiffStorage<array<string, mixed>, array<string, mixed>, array<string, mixed>>', $ds);
 
+// @phpstan-ignore-next-line
 $ds = new MemoryDiffStorage(['id' => MemoryDiffStorage::INT], ['name' => MemoryDiffStorage::STR]);
 $store = $ds->storeA();
 assertType('DataDiff\\DiffStorageStore<array<string, mixed>, array<string, mixed>, array<string, mixed>>', $store);

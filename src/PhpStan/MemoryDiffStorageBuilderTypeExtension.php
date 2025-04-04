@@ -93,26 +93,34 @@ class MemoryDiffStorageBuilderTypeExtension implements DynamicMethodReturnTypeEx
 			[$type]
 		);
 
-		/** @var ConstantArrayType|null $typeK */
-		/** @var ConstantArrayType|null $typeV */
-		/** @var ConstantArrayType|null $typeE */
 		// @phpstan-ignore-next-line
-		if ($typeK?->isConstantArray() && $typeV?->isConstantArray() && $typeE?->isConstantArray()) {
-			if($extendCategory === 'key') {
-				$mergedType = $this->mergeArrays($typeK, $shapeExtension);
-				return new GenericObjectType($methodReflection->getDeclaringClass()->getName(), [$mergedType, $typeV, $typeE]);
-			}
-
-			if($extendCategory === 'value') {
-				$mergedType = $this->mergeArrays($typeV, $shapeExtension);
-				return new GenericObjectType($methodReflection->getDeclaringClass()->getName(), [$typeK, $mergedType, $typeE]);
-			}
-
-			$mergedType = $this->mergeArrays($typeE, $shapeExtension);
-			return new GenericObjectType($methodReflection->getDeclaringClass()->getName(), [$typeK, $typeV, $mergedType]);
+		if(!($typeK?->isConstantArray() && $typeK instanceof ConstantArrayType)) {
+			return null;
 		}
 
-		return null;
+		// @phpstan-ignore-next-line
+		if(!($typeV?->isConstantArray() && $typeV instanceof ConstantArrayType)) {
+			return null;
+		}
+
+		// @phpstan-ignore-next-line
+		if(!($typeE?->isConstantArray() && $typeE instanceof ConstantArrayType)) {
+			return null;
+		}
+
+		if($extendCategory === 'key') {
+			$mergedType = $this->mergeArrays($typeK, $shapeExtension);
+			return new GenericObjectType($methodReflection->getDeclaringClass()->getName(), [$mergedType, $typeV, $typeE]);
+		}
+
+		if($extendCategory === 'value') {
+			$mergedType = $this->mergeArrays($typeV, $shapeExtension);
+			return new GenericObjectType($methodReflection->getDeclaringClass()->getName(), [$typeK, $mergedType, $typeE]);
+		}
+
+		$mergedType = $this->mergeArrays($typeE, $shapeExtension);
+		return new GenericObjectType($methodReflection->getDeclaringClass()->getName(), [$typeK, $typeV, $mergedType]);
+
 	}
 
 	private function mergeArrays(ConstantArrayType $aType, ConstantArrayType $bType): Type {
