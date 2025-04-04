@@ -14,8 +14,9 @@ class SchemaFromModelExtractorTest extends TestCase {
 	}
 
 	public function testExtractDataFromModel(): void {
-		$model = new AnnotatedModel('abc', 5, true, 9.99, new DateTimeImmutable('2022-07-26 12:00:00'));
+		$dt = new DateTimeImmutable('2022-07-26 12:00:00');
+		$model = new AnnotatedModel('abc', 5, true, 9.99, $dt);
 		$values = ModelTools::getValuesFromModel($model, AnnotatedModel::class);
-		self::assertEquals(['id' => 'abc', 'quantity' => 5, 'active' => true, 'amount' => 9.99, 'created_at' => '2022-07-26 12:00:00'], $values);
+		self::assertEquals(['id' => 'abc', 'quantity' => 5, 'active' => true, 'amount' => 9.99, 'created_at' => $dt], $values);
 	}
 }
