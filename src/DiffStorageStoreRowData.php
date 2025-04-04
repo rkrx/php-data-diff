@@ -56,7 +56,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	 */
 	public function getForeignData(array $options = []): array {
 		/** @var TForeign $result */
-		$result = $this->applyOptions($this->row, $options);
+		$result = $this->applyOptions($this->foreignRow, $options);
 		return $result;
 	}
 
