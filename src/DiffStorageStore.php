@@ -7,6 +7,7 @@ use DataDiff\Tools\ModelTools;
 use DataDiff\Tools\PDOTools;
 use DataDiff\Tools\StringTools;
 use DateTimeInterface;
+use Generator;
 use JsonSerializable;
 use PDO;
 use PDOException;
@@ -25,7 +26,7 @@ use Traversable;
  *
  * @phpstan-import-type TConverter from DiffStorageStoreRowDataInterface
  *
- * @implements DiffStorageStoreInterface<TKeySpec, TValueSpec>
+ * @implements DiffStorageStoreInterface<TKeySpec, TValueSpec, TFullSpec, TFullSpec>
  */
 class DiffStorageStore implements DiffStorageStoreInterface {
 	private PDO $pdo;
@@ -119,7 +120,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @param iterable<int, TFullSpec|object> $rows
+	 * @param Generator<int, TFullSpec|object>|iterable<int, TFullSpec|object> $rows
 	 * @param null|array<string, string> $translation
 	 * @param null|callable(TKeySpec, TValueSpec): array<string, null|scalar> $duplicateKeyHandler
 	 * @return $this
@@ -174,7 +175,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 * Get all rows, that have a different value hash in the other store
 	 *
 	 * @param array{limit?: int} $arguments
-	 * @return Traversable<DiffStorageStoreRow<TKeySpec, TValueSpec>>
+	 * @return Traversable<DiffStorageStoreRow<TKeySpec, TValueSpec, TFullSpec, TFullSpec>>
 	 */
 	public function getUnchanged(array $arguments = []): Traversable {
 		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", (string) $arguments['limit']) : "";
@@ -205,60 +206,62 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 * Get all rows, that are present in this store, but not in the other
 	 *
 	 * @param array<string, int|string> $arguments
-	 * @return Traversable<DiffStorageStoreRow<TKeySpec, TValueSpec>>
+	 * @return Traversable<DiffStorageStoreRow<TKeySpec, TValueSpec, TFullSpec, TFullSpec>>
 	 */
 	public function getNew(array $arguments = []) {
 		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
 
-		return $this->query("
-			SELECT
-				s1.s_key AS k,
-				s1.s_data AS d,
-				s2.s_data AS f
-			FROM
-				data_store AS s1
-			LEFT JOIN
-				data_store AS s2 ON s2.s_ab = :sB AND s1.s_key = s2.s_key
-			WHERE
-				s1.s_ab = :sA
-				AND
-				s2.s_ab IS NULL
-			ORDER BY
-				s1.s_sort
-			{$limit}
-		", function (DiffStorageStoreRowInterface $row) {
-			return $this->formatNewRow($row);
-		});
+		return $this->query(
+			query: "
+				SELECT
+					s1.s_key AS k,
+					s1.s_data AS d,
+					s2.s_data AS f
+				FROM
+					data_store AS s1
+				LEFT JOIN
+					data_store AS s2 ON s2.s_ab = :sB AND s1.s_key = s2.s_key
+				WHERE
+					s1.s_ab = :sA
+					AND
+					s2.s_ab IS NULL
+				ORDER BY
+					s1.s_sort
+				{$limit}
+			",
+			stringFormatter: fn (DiffStorageStoreRowInterface $row) => $this->formatNewRow($row)
+		);
 	}
 
 	/**
 	 * Get all rows, that have a different value hash in the other store
 	 *
 	 * @param array<string, int|string> $arguments
-	 * @return Traversable<DiffStorageStoreRow<TKeySpec, TValueSpec>>
+	 * @return Traversable<DiffStorageStoreRow<TKeySpec, TValueSpec, TFullSpec, TFullSpec>>
 	 */
 	public function getChanged(array $arguments = []) {
 		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
 
-		return $this->query("
-			SELECT
-				s1.s_key AS k,
-				s1.s_data AS d,
-				s2.s_data AS f
-			FROM
-				data_store AS s1
-			INNER JOIN
-				data_store AS s2 ON s2.s_ab = :sB AND s1.s_key = s2.s_key
-			WHERE
-				s1.s_ab = :sA
-				AND
-				s1.s_value != s2.s_value
-			ORDER BY
-				s1.s_sort
-			{$limit}
-		", function (DiffStorageStoreRowInterface $row) {
-			return $this->formatChangedRow($row);
-		});
+		return $this->query(
+			query: "
+				SELECT
+					s1.s_key AS k,
+					s1.s_data AS d,
+					s2.s_data AS f
+				FROM
+					data_store AS s1
+				INNER JOIN
+					data_store AS s2 ON s2.s_ab = :sB AND s1.s_key = s2.s_key
+				WHERE
+					s1.s_ab = :sA
+					AND
+					s1.s_value != s2.s_value
+				ORDER BY
+					s1.s_sort
+				{$limit}
+			",
+			stringFormatter: fn (DiffStorageStoreRowInterface $row) => $this->formatChangedRow($row)
+		);
 	}
 
 	/**
@@ -266,64 +269,68 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 * get all rows, that have a different value hash in the other store
 	 *
 	 * @param array<string, int|string> $arguments
-	 * @return Traversable<DiffStorageStoreRow<TKeySpec, TValueSpec>>
+	 * @return Traversable<DiffStorageStoreRow<TKeySpec, TValueSpec, TFullSpec, TFullSpec>>
 	 */
 	public function getNewOrChanged(array $arguments = []) {
 		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
 
-		return $this->query("
-			SELECT
-				s1.s_key AS k,
-				s1.s_data AS d,
-				s2.s_data AS f
-			FROM
-				data_store AS s1
-			LEFT JOIN
-				data_store AS s2 ON s2.s_ab = :sB AND s1.s_key = s2.s_key
-			WHERE
-				s1.s_ab = :sA
-				AND
-				((s2.s_ab IS NULL) OR (s1.s_value != s2.s_value))
-			ORDER BY
-				s1.s_sort
-			{$limit}
-		", function (DiffStorageStoreRowInterface $row) {
-			if(count($row->getForeign()->getValueData())) {
-				return $this->formatChangedRow($row);
-			}
+		return $this->query(
+			query: "
+				SELECT
+					s1.s_key AS k,
+					s1.s_data AS d,
+					s2.s_data AS f
+				FROM
+					data_store AS s1
+				LEFT JOIN
+					data_store AS s2 ON s2.s_ab = :sB AND s1.s_key = s2.s_key
+				WHERE
+					s1.s_ab = :sA
+					AND
+					((s2.s_ab IS NULL) OR (s1.s_value != s2.s_value))
+				ORDER BY
+					s1.s_sort
+				{$limit}
+			",
+			stringFormatter: function (DiffStorageStoreRowInterface $row) {
+				if(count($row->getForeign()->getValueData())) {
+					return $this->formatChangedRow($row);
+				}
 
-			return $this->formatNewRow($row);
-		});
+				return $this->formatNewRow($row);
+			}
+		);
 	}
 
 	/**
 	 * Get all rows, that are present in the other store, but not in this
 	 *
 	 * @param array<string, int|string> $arguments
-	 * @return Traversable<DiffStorageStoreRow<TKeySpec, TValueSpec>>
+	 * @return Traversable<DiffStorageStoreRow<TKeySpec, TValueSpec, TFullSpec, TFullSpec>>
 	 */
 	public function getMissing(array $arguments = []) {
 		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
 
-		return $this->query("
-			SELECT
-				s1.s_key AS k,
-				s2.s_data AS d,
-				s1.s_data AS f
-			FROM
-				data_store AS s1
-			LEFT JOIN
-				data_store AS s2 ON s2.s_ab = :sA AND s2.s_key = s1.s_key
-			WHERE
-				s1.s_ab = :sB
-				AND
-				s2.s_ab IS NULL
-			ORDER BY
-				s1.s_sort
-			{$limit}
-		", function (DiffStorageStoreRowInterface $row) {
-			return $this->formatMissingRow($row);
-		});
+		return $this->query(
+			query: "
+				SELECT
+					s1.s_key AS k,
+					s2.s_data AS d,
+					s1.s_data AS f
+				FROM
+					data_store AS s1
+				LEFT JOIN
+					data_store AS s2 ON s2.s_ab = :sA AND s2.s_key = s1.s_key
+				WHERE
+					s1.s_ab = :sB
+					AND
+					s2.s_ab IS NULL
+				ORDER BY
+					s1.s_sort
+				{$limit}
+			",
+			stringFormatter: fn (DiffStorageStoreRowInterface $row) => $this->formatMissingRow($row)
+		);
 	}
 
 	/**
@@ -332,7 +339,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 * get all rows, that are present in the other store, but not in this
 	 *
 	 * @param array<string, int|string> $arguments
-	 * @return Traversable<DiffStorageStoreRow<TKeySpec, TValueSpec>>
+	 * @return Traversable<DiffStorageStoreRow<TKeySpec, TValueSpec, TFullSpec, TFullSpec>>
 	 */
 	public function getNewOrChangedOrMissing(array $arguments = []) {
 		// Do not use `yield from` here, since the key (index) will start at 0 with getMissing()
@@ -360,7 +367,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	/**
 	 * @param string $query
 	 * @param callable $stringFormatter
-	 * @return Traversable<DiffStorageStoreRow<TKeySpec, TValueSpec>>
+	 * @return Traversable<DiffStorageStoreRow<TKeySpec, TValueSpec, TFullSpec, TFullSpec>>
 	 */
 	private function query(string $query, callable $stringFormatter): Traversable {
 		$stmt = $this->pdo->query($query);
@@ -454,7 +461,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 * @param null|array<string, mixed> $localData
 	 * @param null|array<string, mixed> $foreignData
 	 * @param callable $stringFormatter
-	 * @return DiffStorageStoreRow<TKeySpec, TValueSpec>
+	 * @return DiffStorageStoreRow<TKeySpec, TValueSpec, TFullSpec, TFullSpec>
 	 */
 	private function instantiateRow(?array $localData, ?array $foreignData, callable $stringFormatter): DiffStorageStoreRow {
 		// @phpstan-ignore-next-line
@@ -462,7 +469,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @param DiffStorageStoreRowInterface<TKeySpec, TValueSpec> $row
+	 * @param DiffStorageStoreRowInterface<TKeySpec, TValueSpec, TKeySpec, TValueSpec> $row
 	 * @return string
 	 */
 	private function formatNewRow(DiffStorageStoreRowInterface $row): string {
@@ -473,7 +480,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @param DiffStorageStoreRowInterface<TKeySpec, TValueSpec> $row
+	 * @param DiffStorageStoreRowInterface<TKeySpec, TValueSpec, TKeySpec, TValueSpec> $row
 	 * @return string
 	 */
 	private function formatUnchangedRow(DiffStorageStoreRowInterface $row): string {
@@ -483,7 +490,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @param DiffStorageStoreRowInterface<TKeySpec, TValueSpec> $row
+	 * @param DiffStorageStoreRowInterface<TKeySpec, TValueSpec, TKeySpec, TValueSpec> $row
 	 * @return string
 	 */
 	private function formatChangedRow(DiffStorageStoreRowInterface $row): string {
@@ -494,7 +501,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @param DiffStorageStoreRowInterface<TKeySpec, TValueSpec> $row
+	 * @param DiffStorageStoreRowInterface<TKeySpec, TValueSpec, TKeySpec, TValueSpec> $row
 	 * @return string
 	 */
 	private function formatMissingRow(DiffStorageStoreRowInterface $row): string {

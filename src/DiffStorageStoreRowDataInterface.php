@@ -5,11 +5,13 @@ namespace DataDiff;
 use Exception;
 
 /**
+ * @template TKeySpec of array<string, mixed>
+ * @template TValueSpec of array<string, mixed>
  * @template TLocal of array<string, mixed>
  * @template TForeign of array<string, mixed>
  *
  * @phpstan-type TConverter callable(mixed): (scalar|null)
- * @phpstan-type TStringFormatterFn callable(DiffStorageStoreRow<TLocal, TForeign>): string
+ * @phpstan-type TStringFormatterFn callable(DiffStorageStoreRow<TKeySpec, TValueSpec, TLocal, TForeign>): string
  */
 interface DiffStorageStoreRowDataInterface {
 	/**
@@ -26,13 +28,13 @@ interface DiffStorageStoreRowDataInterface {
 
 	/**
 	 * @param array<string, mixed> $options
-	 * @return array<string, mixed>
+	 * @return TLocal
 	 */
 	public function getKeyData(array $options = []): array;
 
 	/**
 	 * @param array<string, mixed> $options
-	 * @return array<string, mixed>
+	 * @return TLocal
 	 */
 	public function getValueData(array $options = []): array;
 

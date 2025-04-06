@@ -7,12 +7,14 @@ use DataDiff\Tools\StringTools;
 use RuntimeException;
 
 /**
+ * @template TKeySpec of array<string, mixed>
+ * @template TValueSpec of array<string, mixed>
  * @template TLocal of array<string, mixed>
  * @template TForeign of array<string, mixed>
  *
  * @phpstan-import-type TConverter from DiffStorageStoreRowDataInterface
  *
- * @implements DiffStorageStoreRowDataInterface<TLocal, TForeign>
+ * @implements DiffStorageStoreRowDataInterface<TKeySpec, TValueSpec, TLocal, TForeign>
  */
 class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	/** @var TLocal */
@@ -65,7 +67,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 
 	/**
 	 * @param array<string, mixed> $options
-	 * @return array<string, mixed>
+	 * @return TLocal
 	 */
 	public function getKeyData(array $options = []): array {
 		$row = $this->getData($options);
@@ -76,7 +78,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 
 	/**
 	 * @param array<string, mixed> $options
-	 * @return array<string, mixed>
+	 * @return TLocal
 	 */
 	public function getValueData(array $options = []): array {
 		$row = $this->getData($options);

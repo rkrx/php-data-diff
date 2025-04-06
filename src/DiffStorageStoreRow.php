@@ -3,6 +3,8 @@
 namespace DataDiff;
 
 /**
+ * @template TKeySpec of array<string, mixed>
+ * @template TValueSpec of array<string, mixed>
  * @template TLocal of array<string, mixed>
  * @template TForeign of array<string, mixed>
  *
@@ -11,14 +13,14 @@ namespace DataDiff;
  * @phpstan-import-type TConverter from DiffStorageStoreRowDataInterface
  * @phpstan-import-type TStringFormatterFn from DiffStorageStoreRowDataInterface
  *
- * @implements DiffStorageStoreRowInterface<TLocal, TForeign>
+ * @implements DiffStorageStoreRowInterface<TKeySpec, TValueSpec, TLocal, TForeign>
  */
 class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	/** @var TLocalAndForeign */
 	private array $data = [];
-	/** @var DiffStorageStoreRowData<TLocal, TForeign> */
+	/** @var DiffStorageStoreRowData<TKeySpec, TValueSpec, TLocal, TForeign> */
 	private DiffStorageStoreRowData $localData;
-	/** @var DiffStorageStoreRowData<TForeign, TLocal> */
+	/** @var DiffStorageStoreRowData<TKeySpec, TValueSpec, TForeign, TLocal> */
 	private DiffStorageStoreRowData $foreignRowData;
 	/** @var TStringFormatterFn */
 	private $stringFormatter;
@@ -42,11 +44,11 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 		$localData = is_array($localData) ? $localData : [];
 		$foreignData = is_array($foreignData) ? $foreignData : [];
 
-		/** @var DiffStorageStoreRowData<TLocal, TForeign> $localRowData */
+		/** @var DiffStorageStoreRowData<TKeySpec, TValueSpec, TLocal, TForeign> $localRowData */
 		$localRowData = new DiffStorageStoreRowData($localData, $foreignData, $keys, $valueKeys, $converter);
 		$this->localData = $localRowData;
 
-		/** @var DiffStorageStoreRowData<TForeign, TLocal> $foreignRowData */
+		/** @var DiffStorageStoreRowData<TKeySpec, TValueSpec, TForeign, TLocal> $foreignRowData */
 		$foreignRowData = new DiffStorageStoreRowData($foreignData, $localData, $keys, $valueKeys, $converter);
 		$this->foreignRowData = $foreignRowData;
 
@@ -55,14 +57,14 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	}
 
 	/**
-	 * @return DiffStorageStoreRowData<TLocal, TForeign>
+	 * @return DiffStorageStoreRowData<TKeySpec, TValueSpec, TLocal, TForeign>
 	 */
 	public function getLocal(): DiffStorageStoreRowData {
 		return $this->localData;
 	}
 
 	/**
-	 * @return DiffStorageStoreRowData<TForeign, TLocal>
+	 * @return DiffStorageStoreRowData<TKeySpec, TValueSpec, TForeign, TLocal>
 	 */
 	public function getForeign(): DiffStorageStoreRowData {
 		return $this->foreignRowData;

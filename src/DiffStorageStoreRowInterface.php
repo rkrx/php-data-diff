@@ -7,6 +7,8 @@ use JsonSerializable;
 use ReturnTypeWillChange;
 
 /**
+ * @template TKeySpec of array<string, mixed>
+ * @template TValueSpec of array<string, mixed>
  * @template TLocal of array<string, mixed>
  * @template TForeign of array<string, mixed>
  *
@@ -16,12 +18,12 @@ use ReturnTypeWillChange;
  */
 interface DiffStorageStoreRowInterface extends JsonSerializable, ArrayAccess {
 	/**
-	 * @return DiffStorageStoreRowDataInterface<TLocal, TForeign>
+	 * @return DiffStorageStoreRowDataInterface<TKeySpec, TValueSpec, TLocal, TForeign>
 	 */
 	public function getLocal();
 
 	/**
-	 * @return DiffStorageStoreRowDataInterface<TLocal, TForeign>
+	 * @return DiffStorageStoreRowDataInterface<TKeySpec, TValueSpec, TLocal, TForeign>
 	 */
 	public function getForeign();
 
