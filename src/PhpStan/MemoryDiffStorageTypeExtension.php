@@ -57,9 +57,9 @@ class MemoryDiffStorageTypeExtension {
 		$mergedTypes = [];
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 
-		foreach ($constArrays1 as $arr1) {
-			foreach ($constArrays2 as $arr2) {
-				foreach ($constArrays3 as $arr3) {
+		foreach($constArrays1 as $arr1) {
+			foreach($constArrays2 as $arr2) {
+				foreach($constArrays3 as $arr3) {
 					// Add from arr1
 					self::setOffsetValueTypeOnBuilder($builder, $arr1);
 
@@ -78,7 +78,7 @@ class MemoryDiffStorageTypeExtension {
 	}
 
 	private static function setOffsetValueTypeOnBuilder(ConstantArrayTypeBuilder $builder, ConstantArrayType $arrayType): void {
-		foreach ($arrayType->getKeyTypes() as $i => $keyType) {
+		foreach($arrayType->getKeyTypes() as $i => $keyType) {
 			$isOptionalKey = $arrayType->isOptionalKey($i);
 			$valueType = $arrayType->getValueTypes()[$i];
 

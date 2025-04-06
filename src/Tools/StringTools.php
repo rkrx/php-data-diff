@@ -1,4 +1,5 @@
 <?php
+
 namespace DataDiff\Tools;
 
 class StringTools {
@@ -19,6 +20,7 @@ class StringTools {
 			$lastPart = implode('', array_slice($arr, -$partBLength));
 			$value = sprintf('%s...%s', $firstPart, $lastPart);
 		}
+
 		return $value;
 	}
 

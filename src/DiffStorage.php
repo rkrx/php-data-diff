@@ -1,4 +1,5 @@
 <?php
+
 namespace DataDiff;
 
 use DataDiff\Exceptions\EmptySchemaException;
@@ -117,30 +118,30 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	private function buildSchema(array $schema): string {
 		$def = [];
 		foreach($schema as $name => $type) {
-			switch ($type) {
+			switch($type) {
 				case 'BOOL':
 				case 'BOOLEAN':
-					$def[] = sprintf('CASE WHEN CAST(:'.$name.' AS INT) = 0 THEN \'false\' ELSE \'true\' END');
+					$def[] = sprintf('CASE WHEN CAST(:' . $name . ' AS INT) = 0 THEN \'false\' ELSE \'true\' END');
 					break;
 				case 'INT':
 				case 'INTEGER':
-					$def[] = 'printf("%d", :'.$name.')';
+					$def[] = 'printf("%d", :' . $name . ')';
 					break;
 				case 'FLOAT':
-					$def[] = 'printf("%0.6f", :'.$name.')';
+					$def[] = 'printf("%0.6f", :' . $name . ')';
 					break;
 				case 'DOUBLE':
-					$def[] = 'printf("%0.12f", :'.$name.')';
+					$def[] = 'printf("%0.12f", :' . $name . ')';
 					break;
 				case 'MONEY':
-					$def[] = 'printf("%0.2f", :'.$name.')';
+					$def[] = 'printf("%0.2f", :' . $name . ')';
 					break;
 				case 'STR':
 				case 'STRING':
-					$def[] = '\'"\'||HEX(TRIM(:'.$name.'))||\'"\'';
+					$def[] = '\'"\'||HEX(TRIM(:' . $name . '))||\'"\'';
 					break;
 				case 'MD5':
-					$def[] = '\'"\'||md5(:'.$name.')||\'"\'';
+					$def[] = '\'"\'||md5(:' . $name . ')||\'"\'';
 					break;
 				default:
 					throw new InvalidSchemaException("Invalid type: {$type}");
@@ -149,6 +150,7 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 		if(!count($def)) {
 			throw new EmptySchemaException('Can\'t operate with empty schema');
 		}
+
 		return implode('||"|"||', $def);
 	}
 
@@ -166,16 +168,18 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 				'FLOAT' => static fn($value) => is_scalar($value) ? (float) number_format((float) $value, 6, '.', '') : null,
 				'DOUBLE' => static fn($value) => is_scalar($value) ? (double) number_format((double) $value, 12, '.', '') : null,
 				'MONEY' => static fn($value) => is_scalar($value) ? number_format((float) $value, 2, '.', '') : null,
-				'STR', 'STRING' => static function($value) {
+				'STR', 'STRING' => static function ($value) {
 					if($value instanceof DateTimeInterface) {
 						return $value->format('c');
 					}
+
 					return is_scalar($value) ? (string) $value : null;
 				},
 				'MD5' => static fn($value) => is_scalar($value) ? md5((string) $value) : null,
 				default => throw new InvalidSchemaException("Invalid type: {$type}")
 			};
 		}
+
 		return $def;
 	}
 
@@ -191,7 +195,7 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 			if(!$this->testStatement('SELECT md5("aaa") AS md5res')) {
 				$this->registerUDFunction('md5', 'md5');
 			}
-		} catch (Exception $e) {
+		} catch(Exception $e) {
 			$code = $e->getCode();
 			throw new RuntimeException($e->getMessage(), is_int($code) ? $code : 0, $e);
 		}
@@ -204,8 +208,9 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	private function testStatement(string $query): bool {
 		try {
 			$stmt = $this->pdo->query($query);
+
 			return PDOTools::useStmt($stmt, static fn(PDOStatement $stmt) => $stmt->execute() !== false);
-		} catch (PDOException) {
+		} catch(PDOException) {
 			return false;
 		}
 	}
@@ -233,7 +238,7 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 					throw new Exception('Query is not a string');
 				}
 				$this->pdo->exec($query);
-			} catch (Exception) {
+			} catch(Exception) {
 				// If the execution failed, go on anyways
 			}
 		};
@@ -262,6 +267,7 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 		if(!array_key_exists('duplicate_key_handler', $options)) {
 			$options['duplicate_key_handler'] = null;
 		}
+
 		return $options;
 	}
 }

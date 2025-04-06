@@ -1,4 +1,5 @@
 <?php
+
 namespace DataDiff;
 
 use Exception;
@@ -36,13 +37,13 @@ interface DiffStorageStoreRowDataInterface {
 	public function getValueData(array $options = []): array;
 
 	/**
-	 * @param null|array<string, mixed> $fields
-	 * @return array<string, array{local: mixed, foreign: mixed}>
+	 * @param null|list<key-of<TLocal>> $fields
+	 * @return array<string, array{local: TLocal, foreign: TForeign}>
 	 */
 	public function getDiff(?array $fields = null): array;
 
 	/**
-	 * @param null|string[] $fields
+	 * @param null|list<key-of<TLocal>> $fields
 	 * @param null|string $format
 	 * @return string
 	 * @throws Exception

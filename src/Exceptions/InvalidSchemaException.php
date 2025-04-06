@@ -1,4 +1,5 @@
 <?php
+
 namespace DataDiff\Exceptions;
 
 use RuntimeException;

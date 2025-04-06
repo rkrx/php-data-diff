@@ -1,4 +1,5 @@
 <?php
+
 namespace DataDiff;
 
 use DataDiff\Exceptions\EmptySchemaException;
@@ -28,6 +29,7 @@ class MemoryDiffStorage extends DiffStorage {
 	// @phpstan-ignore-next-line
 	public static function fromModelWithAttributes(string $fqClassName, array $options = []): self {
 		[$keySchema, $valueSchema] = ModelTools::getSchemaFromModel($fqClassName);
+
 		// @phpstan-ignore-next-line
 		return new self($keySchema, $valueSchema, $options);
 	}

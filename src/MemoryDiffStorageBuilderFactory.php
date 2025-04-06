@@ -11,6 +11,7 @@ class MemoryDiffStorageBuilderFactory {
 	public function createBuilder(): MemoryDiffStorageBuilder {
 		/** @var MemoryDiffStorageBuilder<array{}, array{}, array{}> $builder */
 		$builder = new MemoryDiffStorageBuilder();
+
 		return $builder;
 	}
 }

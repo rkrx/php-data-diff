@@ -1,18 +1,18 @@
 <?php
+
 namespace DataDiff;
 
 use DataDiff\Tools\Json;
-use DataDiff\Tools\PDOTools;
 use DataDiff\Tools\ModelTools;
+use DataDiff\Tools\PDOTools;
 use DataDiff\Tools\StringTools;
 use DateTimeInterface;
-use Generator;
 use JsonSerializable;
 use PDO;
 use PDOException;
 use PDOStatement;
-use Traversable;
 use stdClass;
+use Traversable;
 
 /**
  * @template TKeySpec of array<string, mixed>
@@ -65,7 +65,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 		array $converter,
 		string $storeA,
 		string $storeB,
-		?callable $duplicateKeyHandler
+		?callable $duplicateKeyHandler,
 	) {
 		$this->pdo = $pdo;
 		$this->selectStmt = $this->pdo->prepare("SELECT s_data FROM data_store WHERE s_ab='{$storeA}' AND s_key={$keySchema} AND (1=1 OR s_value={$valueSchema})");
@@ -98,7 +98,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 		} else {
 			try {
 				$this->insertStmt->execute($metaData);
-			} catch (PDOException $e) {
+			} catch(PDOException $e) {
 				if(strpos($e->getMessage(), 'SQLSTATE[23000]') !== false) {
 					$metaData = $this->buildMetaData($data);
 					unset($metaData['___data'], $metaData['___sort']);
@@ -134,6 +134,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 			/** @var TFullSpec $row */
 			$this->addRow($row, $translation, $duplicateKeyHandler);
 		}
+
 		return $this;
 	}
 
@@ -147,6 +148,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 		/** @var TFullSpec $data */
 		$data = ModelTools::getValuesFromModel($model, $className);
 		$this->addRow($data);
+
 		return $this;
 	}
 
@@ -164,6 +166,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 		foreach($this->getMissing() as $_) {
 			return true;
 		}
+
 		return false;
 	}
 
@@ -175,6 +178,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 */
 	public function getUnchanged(array $arguments = []): Traversable {
 		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", (string) $arguments['limit']) : "";
+
 		return $this->query(
 			query: "
 				SELECT
@@ -193,7 +197,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 					s1.s_sort
 				{$limit}
 			",
-			stringFormatter: fn (DiffStorageStoreRowInterface $row) => $this->formatUnchangedRow($row)
+			stringFormatter: fn(DiffStorageStoreRowInterface $row) => $this->formatUnchangedRow($row)
 		);
 	}
 
@@ -205,6 +209,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 */
 	public function getNew(array $arguments = []) {
 		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
+
 		return $this->query("
 			SELECT
 				s1.s_key AS k,
@@ -234,6 +239,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 */
 	public function getChanged(array $arguments = []) {
 		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
+
 		return $this->query("
 			SELECT
 				s1.s_key AS k,
@@ -264,6 +270,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 */
 	public function getNewOrChanged(array $arguments = []) {
 		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
+
 		return $this->query("
 			SELECT
 				s1.s_key AS k,
@@ -284,6 +291,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 			if(count($row->getForeign()->getValueData())) {
 				return $this->formatChangedRow($row);
 			}
+
 			return $this->formatNewRow($row);
 		});
 	}
@@ -296,6 +304,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 */
 	public function getMissing(array $arguments = []) {
 		$limit = array_key_exists('limit', $arguments) ? sprintf("LIMIT %d", $arguments['limit']) : "";
+
 		return $this->query("
 			SELECT
 				s1.s_key AS k,
@@ -340,8 +349,10 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 */
 	public function clearAll() {
 		$stmt = $this->pdo->query('DELETE FROM data_store WHERE s_ab=:s');
+
 		return PDOTools::useStmt($stmt, function (PDOStatement $stmt) {
 			$stmt->execute(['s' => $this->storeA]);
+
 			return $this;
 		});
 	}
@@ -389,6 +400,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 				$row = self::unserialize($dbRow[0] ?? 'N;');
 				$row = $this->instantiateRow($row, [], function (DiffStorageStoreRowInterface $row) {
 					$data = $row->getData();
+
 					return $this->formatKeyValuePairs($data);
 				});
 				yield $row->getData();
@@ -415,6 +427,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 
 				$result[$key] = $value;
 			}
+
 			return $result;
 		}
 
@@ -427,10 +440,12 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	public function count(): int {
 		$query = 'SELECT COUNT(*) FROM data_store AS s1 WHERE s1.s_ab = :s';
 		$stmt = $this->pdo->query($query);
+
 		return PDOTools::useStmt($stmt, function (PDOStatement $stmt) {
 			$stmt->execute(['s' => $this->storeA]);
 			/** @var string|null $result */
 			$result = $stmt->fetch(PDO::FETCH_COLUMN, 0);
+
 			return (int) $result;
 		});
 	}
@@ -453,6 +468,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	private function formatNewRow(DiffStorageStoreRowInterface $row): string {
 		$keys = $this->formatKeyValuePairs($row->getLocal()->getKeyData(), false);
 		$values = $this->formatKeyValuePairs($row->getLocal()->getValueData());
+
 		return sprintf("New %s (%s)", $keys, $values);
 	}
 
@@ -462,6 +478,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 */
 	private function formatUnchangedRow(DiffStorageStoreRowInterface $row): string {
 		$keys = $this->formatKeyValuePairs($row->getLocal()->getKeyData(), false);
+
 		return sprintf("Unchanged %s", $keys);
 	}
 
@@ -471,6 +488,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	 */
 	private function formatChangedRow(DiffStorageStoreRowInterface $row): string {
 		$keys = $this->formatKeyValuePairs($row->getLocal()->getKeyData(), false);
+
 		// @phpstan-ignore-next-line
 		return sprintf("Changed %s => %s", $keys, $row->getDiffFormatted($this->valueKeys));
 	}
@@ -482,6 +500,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	private function formatMissingRow(DiffStorageStoreRowInterface $row): string {
 		$keys = $this->formatKeyValuePairs($row->getForeign()->getKeyData(), false);
 		$values = $this->formatKeyValuePairs($row->getForeign()->getValueData());
+
 		return sprintf("Missing %s (%s)", $keys, $values);
 	}
 
@@ -498,6 +517,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 			}
 			$keyParts[] = sprintf("%s: %s", $key, Json::encode($value));
 		}
+
 		return implode(', ', $keyParts);
 	}
 
@@ -517,6 +537,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 		$metaData = array_diff_key($metaData, array_diff_key($metaData, $this->converter));
 		$metaData['___data'] = serialize($data);
 		$metaData['___sort'] = $this->counter;
+
 		return $metaData;
 	}
 
@@ -530,6 +551,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 		if($result === false) {
 			return null;
 		}
+
 		return $result;
 	}
 }

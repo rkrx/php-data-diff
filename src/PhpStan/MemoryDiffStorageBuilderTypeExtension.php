@@ -4,6 +4,7 @@ namespace DataDiff\PhpStan;
 
 use DataDiff\Builders\MemoryDiffStorageBuilder;
 use PhpParser\Node\Arg;
+use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\BooleanType;
@@ -18,7 +19,6 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PhpParser\Node\Expr\MethodCall;
 use RuntimeException;
 
 class MemoryDiffStorageBuilderTypeExtension implements DynamicMethodReturnTypeExtension {
@@ -45,7 +45,7 @@ class MemoryDiffStorageBuilderTypeExtension implements DynamicMethodReturnTypeEx
 	private function prepareType(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type {
 		$args = $methodCall->getArgs();
 
-		if (count($args) !== 1) {
+		if(count($args) !== 1) {
 			return $methodReflection->getVariants()[0]->getReturnType();
 		}
 
@@ -110,15 +110,18 @@ class MemoryDiffStorageBuilderTypeExtension implements DynamicMethodReturnTypeEx
 
 		if($extendCategory === 'key') {
 			$mergedType = $this->mergeArrays($typeK, $shapeExtension);
+
 			return new GenericObjectType($methodReflection->getDeclaringClass()->getName(), [$mergedType, $typeV, $typeE]);
 		}
 
 		if($extendCategory === 'value') {
 			$mergedType = $this->mergeArrays($typeV, $shapeExtension);
+
 			return new GenericObjectType($methodReflection->getDeclaringClass()->getName(), [$typeK, $mergedType, $typeE]);
 		}
 
 		$mergedType = $this->mergeArrays($typeE, $shapeExtension);
+
 		return new GenericObjectType($methodReflection->getDeclaringClass()->getName(), [$typeK, $typeV, $mergedType]);
 
 	}
@@ -130,8 +133,8 @@ class MemoryDiffStorageBuilderTypeExtension implements DynamicMethodReturnTypeEx
 		$mergedTypes = [];
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 
-		foreach ($constArrays1 as $arr1) {
-			foreach ($constArrays2 as $arr2) {
+		foreach($constArrays1 as $arr1) {
+			foreach($constArrays2 as $arr2) {
 				// Add from arr1
 				self::setOffsetValueTypeOnBuilder($builder, $arr1);
 
@@ -146,7 +149,7 @@ class MemoryDiffStorageBuilderTypeExtension implements DynamicMethodReturnTypeEx
 	}
 
 	private static function setOffsetValueTypeOnBuilder(ConstantArrayTypeBuilder $builder, ConstantArrayType $arrayType): void {
-		foreach ($arrayType->getKeyTypes() as $i => $keyType) {
+		foreach($arrayType->getKeyTypes() as $i => $keyType) {
 			$isOptionalKey = $arrayType->isOptionalKey($i);
 			$valueType = $arrayType->getValueTypes()[$i];
 

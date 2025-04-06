@@ -28,6 +28,7 @@ class MemoryDiffStorageBuilder {
 	 */
 	public function addBoolKey(string $rowKeyName): self {
 		$this->keyFields[$rowKeyName] = DiffStorageFieldTypeConstants::BOOL;
+
 		return $this;
 	}
 
@@ -38,6 +39,7 @@ class MemoryDiffStorageBuilder {
 	 */
 	public function addIntKey(string $rowKeyName): self {
 		$this->keyFields[$rowKeyName] = DiffStorageFieldTypeConstants::INT;
+
 		return $this;
 	}
 
@@ -48,6 +50,7 @@ class MemoryDiffStorageBuilder {
 	 */
 	public function addFloatKey(string $rowKeyName): self {
 		$this->keyFields[$rowKeyName] = DiffStorageFieldTypeConstants::FLOAT;
+
 		return $this;
 	}
 
@@ -58,6 +61,7 @@ class MemoryDiffStorageBuilder {
 	 */
 	public function addStringKey(string $rowKeyName): self {
 		$this->keyFields[$rowKeyName] = DiffStorageFieldTypeConstants::STR;
+
 		return $this;
 	}
 
@@ -68,6 +72,7 @@ class MemoryDiffStorageBuilder {
 	 */
 	public function addMoneyKey(string $rowKeyName): self {
 		$this->keyFields[$rowKeyName] = DiffStorageFieldTypeConstants::MONEY;
+
 		return $this;
 	}
 
@@ -78,6 +83,7 @@ class MemoryDiffStorageBuilder {
 	 */
 	public function addMd5Key(string $rowKeyName): self {
 		$this->keyFields[$rowKeyName] = DiffStorageFieldTypeConstants::MD5;
+
 		return $this;
 	}
 
@@ -88,6 +94,7 @@ class MemoryDiffStorageBuilder {
 	 */
 	public function addBoolValue(string $rowKeyName): self {
 		$this->valueFields[$rowKeyName] = DiffStorageFieldTypeConstants::BOOL;
+
 		return $this;
 	}
 
@@ -98,6 +105,7 @@ class MemoryDiffStorageBuilder {
 	 */
 	public function addIntValue(string $rowKeyName): self {
 		$this->valueFields[$rowKeyName] = DiffStorageFieldTypeConstants::INT;
+
 		return $this;
 	}
 
@@ -108,6 +116,7 @@ class MemoryDiffStorageBuilder {
 	 */
 	public function addFloatValue(string $rowKeyName): self {
 		$this->valueFields[$rowKeyName] = DiffStorageFieldTypeConstants::FLOAT;
+
 		return $this;
 	}
 
@@ -118,6 +127,7 @@ class MemoryDiffStorageBuilder {
 	 */
 	public function addStringValue(string $rowKeyName): self {
 		$this->valueFields[$rowKeyName] = DiffStorageFieldTypeConstants::STR;
+
 		return $this;
 	}
 
@@ -128,6 +138,7 @@ class MemoryDiffStorageBuilder {
 	 */
 	public function addMoneyValue(string $rowKeyName): self {
 		$this->valueFields[$rowKeyName] = DiffStorageFieldTypeConstants::MONEY;
+
 		return $this;
 	}
 
@@ -138,6 +149,7 @@ class MemoryDiffStorageBuilder {
 	 */
 	public function addMd5Value(string $rowKeyName): self {
 		$this->valueFields[$rowKeyName] = DiffStorageFieldTypeConstants::MD5;
+
 		return $this;
 	}
 
@@ -202,6 +214,7 @@ class MemoryDiffStorageBuilder {
 	public function build(array $options = []): MemoryDiffStorage {
 		/** @var MemoryDiffStorage<TKeySpec, TValueSpec, TExtraSpec> $ds */
 		$ds = new MemoryDiffStorage($this->keyFields, $this->valueFields, $options);
+
 		return $ds;
 	}
 }

@@ -1,10 +1,11 @@
 <?php
+
 namespace DataDiff;
 
-use Traversable;
-use JsonSerializable;
 use Countable;
 use IteratorAggregate;
+use JsonSerializable;
+use Traversable;
 
 /**
  * @template TKeySpec of array<string, mixed>

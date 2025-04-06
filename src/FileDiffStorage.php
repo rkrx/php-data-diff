@@ -1,4 +1,5 @@
 <?php
+
 namespace DataDiff;
 
 use DataDiff\Exceptions\EmptySchemaException;

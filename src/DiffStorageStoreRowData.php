@@ -1,4 +1,5 @@
 <?php
+
 namespace DataDiff;
 
 use DataDiff\Tools\Json;
@@ -47,6 +48,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	public function getData(array $options = []): array {
 		/** @var TLocal $result */
 		$result = $this->applyOptions($this->row, $options);
+
 		return $result;
 	}
 
@@ -57,6 +59,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	public function getForeignData(array $options = []): array {
 		/** @var TForeign $result */
 		$result = $this->applyOptions($this->foreignRow, $options);
+
 		return $result;
 	}
 
@@ -67,6 +70,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	public function getKeyData(array $options = []): array {
 		$row = $this->getData($options);
 		$keys = (array) array_combine($this->keys, $this->keys);
+
 		return array_intersect_key($row, $keys);
 	}
 
@@ -77,11 +81,12 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	public function getValueData(array $options = []): array {
 		$row = $this->getData($options);
 		$keys = (array) array_combine($this->valueKeys, $this->valueKeys);
+
 		return array_intersect_key($row, $keys);
 	}
 
 	/**
-	 * @param null|string[] $fields
+	 * @param null|list<key-of<TLocal>> $fields
 	 * @return array<string, array{local: TLocal, foreign: TForeign}>
 	 */
 	public function getDiff(?array $fields = null): array {
@@ -106,6 +111,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 					$value = call_user_func($this->converter[$key], $value);
 				}
 			}
+
 			return $value;
 		};
 
@@ -115,6 +121,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 			} elseif(is_scalar($value)) {
 				$value = (string) $value;
 			}
+
 			return serialize($value);
 		};
 
@@ -142,6 +149,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 				if(is_string($value)) {
 					$value = StringTools::shorten($value);
 				}
+
 				return Json::encode($value);
 			};
 			foreach($diff as $fieldName => $values) {
@@ -149,6 +157,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 				$localValue = $formatVal($values['local']);
 				$result[] = sprintf("%s: %s -> %s", $fieldName, $foreignValue, $localValue);
 			}
+
 			return implode(', ', $result);
 		}
 		throw new RuntimeException("Unknown format: {$format}");
@@ -183,6 +192,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 			$keys = array_merge($keys, $valueKeys);
 			$row = array_intersect_key($row, $keys);
 		}
+
 		return $row;
 	}
 
@@ -194,6 +204,7 @@ class DiffStorageStoreRowData implements DiffStorageStoreRowDataInterface {
 	private function formatRow(array $row): array {
 		$schema = $this->converter;
 		$schema = array_map(static function () { return null; }, $schema);
+
 		return array_merge($schema, $row);
 	}
 }

@@ -30,6 +30,7 @@ class ModelTools {
 				$valueSchema[$key] = $attribute->type;
 			}
 		}
+
 		return [$keySchema, $valueSchema];
 	}
 
@@ -46,6 +47,7 @@ class ModelTools {
 			$value = $property->getValue($model);
 			$values[$key] = $value;
 		}
+
 		return $values;
 	}
 
@@ -60,6 +62,7 @@ class ModelTools {
 			$result = self::getAnnotationsFromClassOrObject($refClass);
 			self::$classPropertyCache[$className] = $result;
 		}
+
 		return self::$classPropertyCache[$className];
 	}
 
@@ -78,6 +81,7 @@ class ModelTools {
 		if($className !== null && !array_key_exists($className, self::$classPropertyCache)) {
 			self::$classPropertyCache[$className] = $result;
 		}
+
 		return $result;
 	}
 
@@ -100,6 +104,7 @@ class ModelTools {
 				}
 			}
 		}
+
 		return $result;
 	}
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace DataDiff\Tools;
 
 class Json {
@@ -14,6 +15,7 @@ class Json {
 		}
 		if($lastError === JSON_ERROR_UTF8) {
 			$input = self::fixEncoding($input);
+
 			return self::encode($input);
 		}
 		if($str === false) {
@@ -21,6 +23,7 @@ class Json {
 			$msg = json_last_error_msg();
 			throw new JsonException($msg, $code);
 		}
+
 		return $str;
 	}
 
@@ -50,6 +53,7 @@ class Json {
 			}
 			$data = $result;
 		}
+
 		return $data;
 	}
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace DataDiff\Tools;
 
 use PDOStatement;
@@ -17,7 +18,10 @@ class PDOTools {
 			try {
 				return $fn($stmt);
 			} finally {
-				try { $stmt->closeCursor(); } catch (Throwable $e) {}
+				try {
+					$stmt->closeCursor();
+				} catch(Throwable $e) {
+				}
 			}
 		});
 	}
@@ -32,6 +36,7 @@ class PDOTools {
 		if($stmt === false) {
 			throw new RuntimeException('PDOStatement is null');
 		}
+
 		return $fn($stmt);
 	}
 }

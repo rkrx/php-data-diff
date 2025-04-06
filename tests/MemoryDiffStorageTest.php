@@ -53,9 +53,10 @@ class MemoryDiffStorageTest extends TestCase {
 		$ds->storeB()->addRow(['key' => 3, 'val' => 2]);
 		$res = iterator_to_array($ds->storeB()->getUnchanged());
 		self::assertCount(1, $res);
-		foreach($res as $value) {
-			self::assertEquals(1, $value['key']);
-			self::assertEquals('Unchanged key: 1', (string) $value);
+		foreach($ds->storeB()->getUnchanged() as $row) {
+			$rowData = $row->getData();
+			self::assertEquals(1, $rowData['key']);
+			self::assertEquals('Unchanged key: 1', (string) $row);
 			return;
 		}
 		// @phpstan-ignore-next-line
@@ -66,8 +67,9 @@ class MemoryDiffStorageTest extends TestCase {
 	 */
 	public function testNew(): void {
 		$res = $this->ds->storeA()->getNew();
-		foreach($res as $key => $value) {
-			self::assertEquals(501, $value['client_id']);
+		foreach($res as $row) {
+			$rowData = $row->getData();
+			self::assertEquals(501, $rowData['client_id']);
 			return;
 		}
 		// @phpstan-ignore-next-line
@@ -93,8 +95,9 @@ class MemoryDiffStorageTest extends TestCase {
 	 */
 	public function testChanges(): void {
 		$res = $this->ds->storeA()->getChanged();
-		foreach($res as $key => $value) {
-			self::assertEquals(50, $value['client_id']);
+		foreach($res as $row) {
+			$rowData = $row->getData();
+			self::assertEquals(50, $rowData['client_id']);
 			return;
 		}
 		// @phpstan-ignore-next-line
@@ -113,8 +116,9 @@ class MemoryDiffStorageTest extends TestCase {
 	 */
 	public function testMissing(): void {
 		$res = $this->ds->storeA()->getMissing();
-		foreach($res as $key => $value) {
-			self::assertEquals(1, $value['client_id']);
+		foreach($res as $row) {
+			$rowData = $row->getData();
+			self::assertEquals(1, $rowData['client_id']);
 			return;
 		}
 		// @phpstan-ignore-next-line
@@ -461,7 +465,8 @@ class MemoryDiffStorageTest extends TestCase {
 		$ds->storeA()->addRow(['key' => 1, 'value' => 'aaa' . chr(197)]);
 		$ds->storeB()->addRow(['key' => 1, 'value' => 'bbb' . chr(197)]);
 		foreach($ds->storeB()->getChanged() as $row) {
-			self::assertEquals(1, $row['key']);
+			$rowData = $row->getData();
+			self::assertEquals(1, $rowData['key']);
 			self::assertEquals('bbb' . chr(197), $row['value']);
 			self::assertEquals(['value' => ['local' => 'bbb' . chr(197), 'foreign' => 'aaa' . chr(197)]], $row->getDiff());
 			return;

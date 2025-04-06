@@ -37,6 +37,7 @@ class PHPStanDiscouragedNewClassUsageRule {
 				foreach($node->class->implements as $class) {
 					$result = [...$result, ...$this->processData($class->toString(), $scope)];
 				}
+
 				return $result;
 			}
 
@@ -93,7 +94,7 @@ class PHPStanDiscouragedNewClassUsageRule {
 				return [
 					RuleErrorBuilder::message($message)
 						->identifier('DiffStorageRules.discouragedClassName')
-						->build()
+						->build(),
 				];
 			}
 		}

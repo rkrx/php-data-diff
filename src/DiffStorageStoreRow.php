@@ -1,9 +1,12 @@
 <?php
+
 namespace DataDiff;
 
 /**
  * @template TLocal of array<string, mixed>
  * @template TForeign of array<string, mixed>
+ *
+ * @phpstan-type TLocalAndForeign TLocal|TForeign
  *
  * @phpstan-import-type TConverter from DiffStorageStoreRowDataInterface
  * @phpstan-import-type TStringFormatterFn from DiffStorageStoreRowDataInterface
@@ -11,7 +14,7 @@ namespace DataDiff;
  * @implements DiffStorageStoreRowInterface<TLocal, TForeign>
  */
 class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
-	/** @var array<string, mixed> */
+	/** @var TLocalAndForeign */
 	private array $data = [];
 	/** @var DiffStorageStoreRowData<TLocal, TForeign> */
 	private DiffStorageStoreRowData $localData;
@@ -30,6 +33,7 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	 */
 	public function __construct(?array $localData, ?array $foreignData, array $keys, array $valueKeys, array $converter, callable $stringFormatter) {
 		if($localData !== null) {
+			// @phpstan-ignore-next-line
 			$this->data = $localData;
 		} elseif($foreignData !== null) {
 			$this->data = $foreignData;
@@ -89,7 +93,7 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	}
 
 	/**
-	 * @param null|string[] $fields
+	 * @param null|list<key-of<TLocal>> $fields
 	 * @return array<string, array{local: TLocal, foreign: TForeign}>
 	 */
 	public function getDiff(?array $fields = null): array {
@@ -97,7 +101,7 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	}
 
 	/**
-	 * @param null|string[] $fields
+	 * @param null|list<key-of<TLocal>> $fields
 	 * @param null|string $format
 	 * @return string
 	 */
@@ -106,14 +110,14 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	}
 
 	/**
-	 * @return array<string, mixed>
+	 * @return TLocalAndForeign
 	 */
 	public function jsonSerialize() {
 		return $this->data;
 	}
 
 	/**
-	 * @param string $offset
+	 * @param key-of<TLocalAndForeign> $offset
 	 * @return bool true on success or false on failure.
 	 */
 	public function offsetExists($offset): bool {
@@ -121,27 +125,29 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	}
 
 	/**
-	 * @param string $offset
-	 * @return mixed
+	 * @param key-of<TLocalAndForeign> $offset
+	 * @return value-of<TLocalAndForeign>
 	 */
 	public function offsetGet($offset) {
 		if($this->offsetExists($offset)) {
 			return $this->data[$offset];
 		}
+
 		return null;
 	}
 
 	/**
-	 * @param string $offset
-	 * @param mixed $value
+	 * @param key-of<TLocalAndForeign> $offset
+	 * @param value-of<TLocalAndForeign> $value
 	 * @return void
 	 */
 	public function offsetSet($offset, $value): void {
+		// @phpstan-ignore-next-line
 		$this->data[$offset] = $value;
 	}
 
 	/**
-	 * @param string $offset
+	 * @param key-of<TLocalAndForeign> $offset
 	 * @return void
 	 */
 	public function offsetUnset($offset): void {
@@ -155,6 +161,7 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	 */
 	public function __toString(): string {
 		$result = call_user_func($this->stringFormatter, $this);
+
 		/** @var string $result */
 		return (string) $result;
 	}
