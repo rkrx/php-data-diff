@@ -10,6 +10,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\FloatType;
@@ -57,7 +58,7 @@ class MemoryDiffStorageBuilderTypeExtension implements DynamicMethodReturnTypeEx
 
 		return $this->extendType(
 			type: match ($name) {
-				'Bool' => TypeCombinator::union(new BooleanType(), new NullType()),
+				'Bool' => TypeCombinator::union(new BooleanType(), new ConstantIntegerType(0), new ConstantIntegerType(1), new NullType()),
 				'Int' => TypeCombinator::union(new IntegerType(), new NullType()),
 				'Float', 'Money' => TypeCombinator::union(new FloatType(), new NullType()),
 				'String', 'Md5' => TypeCombinator::union(new StringType(), new NullType()),
