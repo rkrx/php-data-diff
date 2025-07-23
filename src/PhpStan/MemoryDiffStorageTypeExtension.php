@@ -12,8 +12,9 @@ use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\DynamicMethodReturnTypeExtension;
 
-class MemoryDiffStorageTypeExtension {
+class MemoryDiffStorageTypeExtension implements DynamicMethodReturnTypeExtension {
 	public function getClass(): string {
 		return DiffStorage::class;
 	}

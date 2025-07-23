@@ -7,11 +7,16 @@ use DataDiff\FileDiffStorage;
 use DataDiff\MemoryDiffStorage;
 use DataDiff\MemoryDiffStorageBuilderFactory;
 use PhpParser\Node;
+use PhpParser\Node\Expr\New_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Rules\Rule;
 
-class PHPStanDiscouragedNewClassUsageRule {
+/**
+ * @implements Rule<New_>
+ */
+class PHPStanDiscouragedNewClassUsageRule implements Rule {
 	public function __construct() {}
 
 	public function getClass(): string {

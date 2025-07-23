@@ -12,4 +12,4 @@ services:
 	-
 	    class: DataDiff\PhpStan\PHPStanDiscouragedNewClassUsageRule
 	    tags:
-	        - phpstan.broker.dynamicMethodReturnTypeExtension
+	        - phpstan.rules.rule
