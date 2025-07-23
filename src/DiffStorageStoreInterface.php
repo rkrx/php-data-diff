@@ -24,7 +24,7 @@ interface DiffStorageStoreInterface extends Countable, IteratorAggregate {
 	public function addRow(array $data, ?array $translation = null, ?callable $duplicateKeyHandler = null): void;
 
 	/**
-	 * @param Generator<int, TLocal>|iterable<int, TLocal> $rows
+	 * @param Generator<TLocal>|iterable<TLocal> $rows
 	 * @param null|array<string, string> $translation
 	 * @param null|callable(array<string, null|scalar>, array<string, null|scalar>): array<string, null|scalar> $duplicateKeyHandler
 	 * @return $this
