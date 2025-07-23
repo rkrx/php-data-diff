@@ -2,6 +2,7 @@
 	"name": "rkr/data-diff",
 	"description": "A handy tool for comparing structured data quickly in a key-value manner",
 	"license": "MIT",
+	"homepage": "https://github.com/rkrx/php-data-diff",
 	"require": {
 		"php": ">= 8.1",
 
