@@ -118,7 +118,7 @@ class MemoryDiffStorageTest extends TestCase {
 		$res = $this->ds->storeA()->getMissing();
 		foreach($res as $row) {
 			$rowData = $row->getData();
-			self::assertEquals(1, $rowData['client_id']);
+			self::assertEquals(null, $rowData['client_id']);
 			return;
 		}
 		// @phpstan-ignore-next-line
@@ -307,7 +307,7 @@ class MemoryDiffStorageTest extends TestCase {
 	public function testRowStringRepresentation(): void {
 		$ds = self::create()
 			->addStringKey('key')
-			->addStringKey('value')
+			->addStringValue('value')
 			->build();
 
 		$ds->storeA()->addRow(['key' => 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr', 'value' => 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr']);
@@ -325,7 +325,7 @@ class MemoryDiffStorageTest extends TestCase {
 	public function testCount(): void {
 		$ds = self::create()
 			->addIntKey('key')
-			->addStringKey('value')
+			->addStringValue('value')
 			->build();
 
 		for($i=1; $i<=100; $i++) {

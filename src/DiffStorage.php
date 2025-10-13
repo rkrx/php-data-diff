@@ -22,7 +22,7 @@ use RuntimeException;
  * @implements DiffStorageInterface<TKeySpec, TValueSpec, TExtraSpec>
  */
 abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldTypeConstants {
-	private PDO $pdo;
+	private PDO|Pdo\Sqlite $pdo;
 	/** @var DiffStorageStore<TKeySpec, TValueSpec&TExtraSpec, TKeySpec&TValueSpec&TExtraSpec> */
 	private DiffStorageStore $storeA;
 	/** @var DiffStorageStore<TKeySpec, TValueSpec&TExtraSpec, TKeySpec&TValueSpec&TExtraSpec> */
@@ -42,7 +42,11 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 		$options = $this->defineOptionDefaults($options);
 		$dsn = $options['dsn'] ?? null;
 		$dsn = is_string($dsn) ? $dsn : 'sqlite::memory:';
-		$this->pdo = new PDO($dsn, null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+		if(PHP_VERSION_ID < 80500) { // @phpstan-ignore-line
+			$this->pdo = new PDO($dsn, null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+		} else {
+			$this->pdo = new Pdo\Sqlite($dsn, null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+		}
 		$this->initSqlite();
 		$this->compatibility();
 		$this->buildTables();
@@ -221,12 +225,14 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	 * @throws Exception
 	 */
 	private function registerUDFunction(string $name, $callback): void {
-		// @phpstan-ignore-next-line
-		if(!method_exists($this->pdo, 'sqliteCreateFunction')) {
-			throw new Exception('It is not possible to create user defined functions for rkr/data-diff\'s sqlite instance');
+		if(PHP_VERSION_ID < 80500) { // @phpstan-ignore-line
+			if(!method_exists($this->pdo, 'sqliteCreateFunction')) { // @phpstan-ignore-line
+				throw new Exception('It is not possible to create user defined functions for rkr/data-diff\'s sqlite instance');
+			}
+			$this->pdo->sqliteCreateFunction($name, $callback); // @phpstan-ignore-line
+		} else {
+			$this->pdo->createFunction($name, $callback); // @phpstan-ignore-line
 		}
-		// @phpstan-ignore-next-line
-		call_user_func([$this->pdo, 'sqliteCreateFunction'], $name, $callback);
 	}
 
 	/**
