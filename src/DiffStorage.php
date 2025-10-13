@@ -166,7 +166,7 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 				'BOOL', 'BOOLEAN' => static fn($value) => is_scalar($value) ? (bool) $value : null,
 				'INT', 'INTEGER' => static fn($value) => is_scalar($value) ? (int) $value : null,
 				'FLOAT' => static fn($value) => is_scalar($value) ? (float) number_format((float) $value, 6, '.', '') : null,
-				'DOUBLE' => static fn($value) => is_scalar($value) ? (double) number_format((double) $value, 12, '.', '') : null,
+				'DOUBLE' => static fn($value) => is_scalar($value) ? (float) number_format((float) $value, 12, '.', '') : null,
 				'MONEY' => static fn($value) => is_scalar($value) ? number_format((float) $value, 2, '.', '') : null,
 				'STR', 'STRING' => static function ($value) {
 					if($value instanceof DateTimeInterface) {
