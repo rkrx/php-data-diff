@@ -42,7 +42,7 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 		$options = $this->defineOptionDefaults($options);
 		$dsn = $options['dsn'] ?? null;
 		$dsn = is_string($dsn) ? $dsn : 'sqlite::memory:';
-		if(PHP_VERSION_ID < 80500) { // @phpstan-ignore-line
+		if(PHP_VERSION_ID < 80500) {
 			$this->pdo = new PDO($dsn, null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 		} else {
 			$this->pdo = new Pdo\Sqlite($dsn, null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
@@ -225,7 +225,7 @@ abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldType
 	 * @throws Exception
 	 */
 	private function registerUDFunction(string $name, $callback): void {
-		if(PHP_VERSION_ID < 80500) { // @phpstan-ignore-line
+		if(PHP_VERSION_ID < 80500) {
 			if(!method_exists($this->pdo, 'sqliteCreateFunction')) { // @phpstan-ignore-line
 				throw new Exception('It is not possible to create user defined functions for rkr/data-diff\'s sqlite instance');
 			}
