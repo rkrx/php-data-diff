@@ -118,7 +118,7 @@ class MemoryDiffStorageTest extends TestCase {
 		$res = $this->ds->storeA()->getMissing();
 		foreach($res as $row) {
 			$rowData = $row->getData();
-			self::assertEquals(null, $rowData['client_id']);
+			self::assertNull($rowData['client_id'] ?? null);
 			return;
 		}
 		// @phpstan-ignore-next-line
