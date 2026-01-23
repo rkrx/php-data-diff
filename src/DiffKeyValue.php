@@ -14,7 +14,7 @@ class DiffKeyValue {
 	 * @param array<KB, VB> $second
 	 * @return array{new: array<KB, VB>, missing: array<KA, VA>, changed: array<KB, VB>, unchanged: array<KB, VB>}
 	 */
-	public static function computeChangesInSecond(array $first, array $second): array {
+	public static function computeDifferencesInSecond(array $first, array $second): array {
 		return [
 			'new' => self::getEntriesMissingInSecond($second, $first),
 			'missing' => self::getEntriesMissingInSecond($first, $second),
@@ -35,7 +35,7 @@ class DiffKeyValue {
 	 * @return array{new: list<KB>, missing: list<KA>, changed: list<KB>, unchanged: list<KB>}
 	 */
 	public static function computeChangedKeysInSecond(array $first, array $second): array {
-		$result = self::computeChangesInSecond($first, $second);
+		$result = self::computeDifferencesInSecond($first, $second);
 		return [
 			'new' => array_keys($result['new']),
 			'missing' => array_keys($result['missing']),

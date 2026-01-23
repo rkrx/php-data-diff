@@ -15,11 +15,11 @@ class DiffKeyValueTest extends TestCase {
 		self::assertEquals(['c'], $result);
 	}
 
-	public function testComputeChangesInSecond(): void {
+	public function testComputeDifferencesInSecond(): void {
 		$first = ['a' => 1, 'c' => 1, 'd' => 3];
 		$second = ['a' => 2, 'b' => 2, 'd' => 3];
 
-		$result = DiffKeyValue::computeChangesInSecond($first, $second);
+		$result = DiffKeyValue::computeDifferencesInSecond($first, $second);
 
 		$expected = [
 			'new' => ['b' => 2],
