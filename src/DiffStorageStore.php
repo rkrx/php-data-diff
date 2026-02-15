@@ -82,7 +82,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @param TFullSpec $data
+	 * @param array<string, mixed> $data
 	 * @param null|array<string, string> $translation
 	 * @param null|callable(TKeySpec, TValueSpec): array<string, null|scalar> $duplicateKeyHandler
 	 */
@@ -120,7 +120,7 @@ class DiffStorageStore implements DiffStorageStoreInterface {
 	}
 
 	/**
-	 * @param Generator<TFullSpec|object>|iterable<TFullSpec|object> $rows
+	 * @param Generator<array<string, mixed>|object>|iterable<array<string, mixed>|object> $rows
 	 * @param null|array<string, string> $translation
 	 * @param null|callable(TKeySpec, TValueSpec): array<string, null|scalar> $duplicateKeyHandler
 	 * @return $this

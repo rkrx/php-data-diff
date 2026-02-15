@@ -290,7 +290,6 @@ class MemoryDiffStorageTest extends TestCase {
 			->addMd5Value('value')
 			->build();
 
-		// @phpstan-ignore-next-line
 		$ds->storeA()->addRow(['id' => 10, 'greeting' => 'Hello World'], ['id' => 'key', 'greeting' => 'value']);
 
 		foreach($ds->storeA() as $key => $value) {
@@ -492,7 +491,6 @@ class MemoryDiffStorageTest extends TestCase {
 			'c' => 3,
 		]);
 
-		// @phpstan-ignore-next-line
 		$ds->storeB()->addRow([
 			'key' => 1,
 			'a' => 3,

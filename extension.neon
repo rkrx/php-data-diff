@@ -3,11 +3,10 @@ includes:
 
 services:
 	-
-	    class: DataDiff\PhpStan\MemoryDiffStorageBuilderTypeExtension
-	    tags:
-	        - phpstan.broker.dynamicMethodReturnTypeExtension
-
+		class: DataDiff\PhpStan\MemoryDiffStorageBuilderReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
 	-
-	    class: DataDiff\PhpStan\MemoryDiffStorageTypeExtension
-	    tags:
-	        - phpstan.broker.dynamicMethodReturnTypeExtension
+		class: DataDiff\PhpStan\DiffStorageStoreReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension

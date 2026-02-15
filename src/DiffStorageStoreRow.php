@@ -8,7 +8,7 @@ namespace DataDiff;
  * @template TLocal of array<string, mixed>
  * @template TForeign of array<string, mixed>
  *
- * @phpstan-type TLocalAndForeign TLocal|TForeign
+ * @phpstan-type TLocalOrForeign TLocal|TForeign
  *
  * @phpstan-import-type TConverter from DiffStorageStoreRowDataInterface
  * @phpstan-import-type TStringFormatterFn from DiffStorageStoreRowDataInterface
@@ -16,7 +16,7 @@ namespace DataDiff;
  * @implements DiffStorageStoreRowInterface<TKeySpec, TValueSpec, TLocal, TForeign>
  */
 class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
-	/** @var TLocalAndForeign */
+	/** @var TLocalOrForeign */
 	private array $data = [];
 	/** @var DiffStorageStoreRowData<TKeySpec, TValueSpec, TLocal, TForeign> */
 	private DiffStorageStoreRowData $localData;
@@ -37,6 +37,7 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 		if($localData !== null) {
 			$this->data = $localData;
 		} elseif($foreignData !== null) {
+			// @phpstan-ignore-next-line
 			$this->data = $foreignData;
 		}
 
@@ -111,14 +112,14 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	}
 
 	/**
-	 * @return TLocalAndForeign
+	 * @return TLocalOrForeign
 	 */
 	public function jsonSerialize() {
 		return $this->data;
 	}
 
 	/**
-	 * @param key-of<TLocalAndForeign> $offset
+	 * @param key-of<TLocalOrForeign> $offset
 	 * @return bool true on success or false on failure.
 	 */
 	public function offsetExists($offset): bool {
@@ -126,8 +127,8 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	}
 
 	/**
-	 * @param key-of<TLocalAndForeign> $offset
-	 * @return value-of<TLocalAndForeign>
+	 * @param key-of<TLocalOrForeign> $offset
+	 * @return value-of<TLocalOrForeign>
 	 */
 	public function offsetGet($offset) {
 		if($this->offsetExists($offset)) {
@@ -138,8 +139,8 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	}
 
 	/**
-	 * @param key-of<TLocalAndForeign> $offset
-	 * @param value-of<TLocalAndForeign> $value
+	 * @param key-of<TLocalOrForeign> $offset
+	 * @param value-of<TLocalOrForeign> $value
 	 * @return void
 	 */
 	public function offsetSet($offset, $value): void {
@@ -148,7 +149,7 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	}
 
 	/**
-	 * @param key-of<TLocalAndForeign> $offset
+	 * @param key-of<TLocalOrForeign> $offset
 	 * @return void
 	 */
 	public function offsetUnset($offset): void {

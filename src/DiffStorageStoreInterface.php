@@ -17,16 +17,16 @@ use Traversable;
  */
 interface DiffStorageStoreInterface extends Countable, IteratorAggregate {
 	/**
-	 * @param array<string, null|scalar> $data
+	 * @param array<string, mixed> $data
 	 * @param null|array<string, string> $translation
-	 * @param null|callable(array<string, null|scalar>, array<string, null|scalar>): array<string, null|scalar> $duplicateKeyHandler
+	 * @param null|callable(array<string, mixed>, array<string, mixed>): array<string, null|scalar> $duplicateKeyHandler
 	 */
 	public function addRow(array $data, ?array $translation = null, ?callable $duplicateKeyHandler = null): void;
 
 	/**
-	 * @param Generator<TLocal>|iterable<TLocal> $rows
+	 * @param Generator<array<string, mixed>>|iterable<array<string, mixed>> $rows
 	 * @param null|array<string, string> $translation
-	 * @param null|callable(array<string, null|scalar>, array<string, null|scalar>): array<string, null|scalar> $duplicateKeyHandler
+	 * @param null|callable(array<string, mixed>, array<string, mixed>): array<string, null|scalar> $duplicateKeyHandler
 	 * @return $this
 	 */
 	public function addRows($rows, ?array $translation = null, ?callable $duplicateKeyHandler = null);

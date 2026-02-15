@@ -4,6 +4,7 @@ namespace DataDiff\Builders;
 
 use DataDiff\DiffStorageFieldTypeConstants;
 use DataDiff\MemoryDiffStorage;
+use rkr\addKey;
 
 /**
  * @template TKeySpec of array<string, mixed>
@@ -13,6 +14,13 @@ use DataDiff\MemoryDiffStorage;
  * @phpstan-type TKeyOfValueSpec key-of<TValueSpec>
  *
  * @template TExtraSpec of array<string, mixed>
+ *
+ * @phpstan-type TBoolField bool|0|1|null
+ * @phpstan-type TIntField int|null
+ * @phpstan-type TFloatField float|null
+ * @phpstan-type TMoneyField float|null
+ * @phpstan-type TStringField string|null
+ * @phpstan-type TMd5Field string|null
  */
 class MemoryDiffStorageBuilder {
 	/** @var array<string, string> */
@@ -22,9 +30,9 @@ class MemoryDiffStorageBuilder {
 	private array $valueFields = [];
 
 	/**
-	 * @template TRowKeyName of array-key&string
+	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, TExtraSpec>
+	 * @return self<addKey<TKeySpec, TRowKeyName, TBoolField>, TValueSpec, TExtraSpec>
 	 */
 	public function addBoolKey(string $rowKeyName): self {
 		$this->keyFields[$rowKeyName] = DiffStorageFieldTypeConstants::BOOL;
@@ -33,9 +41,9 @@ class MemoryDiffStorageBuilder {
 	}
 
 	/**
-	 * @template TRowKeyName of array-key&string
+	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, TExtraSpec>
+	 * @return self<addKey<TKeySpec, TRowKeyName, TIntField>, TValueSpec, TExtraSpec>
 	 */
 	public function addIntKey(string $rowKeyName): self {
 		$this->keyFields[$rowKeyName] = DiffStorageFieldTypeConstants::INT;
@@ -44,9 +52,9 @@ class MemoryDiffStorageBuilder {
 	}
 
 	/**
-	 * @template TRowKeyName of array-key&string
+	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, TExtraSpec>
+	 * @return self<addKey<TKeySpec, TRowKeyName, TFloatField>, TValueSpec, TExtraSpec>
 	 */
 	public function addFloatKey(string $rowKeyName): self {
 		$this->keyFields[$rowKeyName] = DiffStorageFieldTypeConstants::FLOAT;
@@ -55,9 +63,9 @@ class MemoryDiffStorageBuilder {
 	}
 
 	/**
-	 * @template TRowKeyName of array-key&string
+	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, TExtraSpec>
+	 * @return self<addKey<TKeySpec, TRowKeyName, TStringField>, TValueSpec, TExtraSpec>
 	 */
 	public function addStringKey(string $rowKeyName): self {
 		$this->keyFields[$rowKeyName] = DiffStorageFieldTypeConstants::STR;
@@ -66,9 +74,9 @@ class MemoryDiffStorageBuilder {
 	}
 
 	/**
-	 * @template TRowKeyName of array-key&string
+	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, TExtraSpec>
+	 * @return self<addKey<TKeySpec, TRowKeyName, TMoneyField>, TValueSpec, TExtraSpec>
 	 */
 	public function addMoneyKey(string $rowKeyName): self {
 		$this->keyFields[$rowKeyName] = DiffStorageFieldTypeConstants::MONEY;
@@ -77,9 +85,9 @@ class MemoryDiffStorageBuilder {
 	}
 
 	/**
-	 * @template TRowKeyName of array-key&string
+	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, TExtraSpec>
+	 * @return self<addKey<TKeySpec, TRowKeyName, TMd5Field>, TValueSpec, TExtraSpec>
 	 */
 	public function addMd5Key(string $rowKeyName): self {
 		$this->keyFields[$rowKeyName] = DiffStorageFieldTypeConstants::MD5;
@@ -88,9 +96,9 @@ class MemoryDiffStorageBuilder {
 	}
 
 	/**
-	 * @template TRowKeyName of array-key&string
+	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, TExtraSpec>
+	 * @return self<TKeySpec, addKey<TValueSpec, TRowKeyName, TBoolField>, TExtraSpec>
 	 */
 	public function addBoolValue(string $rowKeyName): self {
 		$this->valueFields[$rowKeyName] = DiffStorageFieldTypeConstants::BOOL;
@@ -99,9 +107,9 @@ class MemoryDiffStorageBuilder {
 	}
 
 	/**
-	 * @template TRowKeyName of array-key&string
+	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, TExtraSpec>
+	 * @return self<TKeySpec, addKey<TValueSpec, TRowKeyName, TIntField>, TExtraSpec>
 	 */
 	public function addIntValue(string $rowKeyName): self {
 		$this->valueFields[$rowKeyName] = DiffStorageFieldTypeConstants::INT;
@@ -110,9 +118,9 @@ class MemoryDiffStorageBuilder {
 	}
 
 	/**
-	 * @template TRowKeyName of array-key&string
+	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, TExtraSpec>
+	 * @return self<TKeySpec, addKey<TValueSpec, TRowKeyName, TFloatField>, TExtraSpec>
 	 */
 	public function addFloatValue(string $rowKeyName): self {
 		$this->valueFields[$rowKeyName] = DiffStorageFieldTypeConstants::FLOAT;
@@ -121,9 +129,9 @@ class MemoryDiffStorageBuilder {
 	}
 
 	/**
-	 * @template TRowKeyName of array-key&string
+	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, TExtraSpec>
+	 * @return self<TKeySpec, addKey<TValueSpec, TRowKeyName, TStringField>, TExtraSpec>
 	 */
 	public function addStringValue(string $rowKeyName): self {
 		$this->valueFields[$rowKeyName] = DiffStorageFieldTypeConstants::STR;
@@ -132,9 +140,9 @@ class MemoryDiffStorageBuilder {
 	}
 
 	/**
-	 * @template TRowKeyName of array-key&string
+	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, TExtraSpec>
+	 * @return self<TKeySpec, addKey<TValueSpec, TRowKeyName, TMoneyField>, TExtraSpec>
 	 */
 	public function addMoneyValue(string $rowKeyName): self {
 		$this->valueFields[$rowKeyName] = DiffStorageFieldTypeConstants::MONEY;
@@ -143,9 +151,9 @@ class MemoryDiffStorageBuilder {
 	}
 
 	/**
-	 * @template TRowKeyName of array-key&string
+	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, TExtraSpec>
+	 * @return self<TKeySpec, addKey<TValueSpec, TRowKeyName, TMd5Field>, TExtraSpec>
 	 */
 	public function addMd5Value(string $rowKeyName): self {
 		$this->valueFields[$rowKeyName] = DiffStorageFieldTypeConstants::MD5;
@@ -154,54 +162,54 @@ class MemoryDiffStorageBuilder {
 	}
 
 	/**
-	 * @template TRowKeyName of array-key&string
+	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, TExtraSpec>
+	 * @return self<TKeySpec, TValueSpec, addKey<TExtraSpec, TRowKeyName, TBoolField>>
 	 */
 	public function addBoolExtra(string $rowKeyName): self {
 		return $this;
 	}
 
 	/**
-	 * @template TRowKeyName of array-key&string
+	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, TExtraSpec>
+	 * @return self<TKeySpec, TValueSpec, addKey<TExtraSpec, TRowKeyName, TIntField>>
 	 */
 	public function addIntExtra(string $rowKeyName): self {
 		return $this;
 	}
 
 	/**
-	 * @template TRowKeyName of array-key&string
+	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, TExtraSpec>
+	 * @return self<TKeySpec, TValueSpec, addKey<TExtraSpec, TRowKeyName, TFloatField>>
 	 */
 	public function addFloatExtra(string $rowKeyName): self {
 		return $this;
 	}
 
 	/**
-	 * @template TRowKeyName of array-key&string
+	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, TExtraSpec>
+	 * @return self<TKeySpec, TValueSpec, addKey<TExtraSpec, TRowKeyName, TStringField>>
 	 */
 	public function addStringExtra(string $rowKeyName): self {
 		return $this;
 	}
 
 	/**
-	 * @template TRowKeyName of array-key&string
+	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, TExtraSpec>
+	 * @return self<TKeySpec, TValueSpec, addKey<TExtraSpec, TRowKeyName, TMoneyField>>
 	 */
 	public function addMoneyExtra(string $rowKeyName): self {
 		return $this;
 	}
 
 	/**
-	 * @template TRowKeyName of array-key&string
+	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, TExtraSpec>
+	 * @return self<TKeySpec, TValueSpec, addKey<TExtraSpec, TRowKeyName, TMd5Field>>
 	 */
 	public function addMd5Extra(string $rowKeyName): self {
 		return $this;

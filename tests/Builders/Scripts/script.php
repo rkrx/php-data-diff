@@ -40,4 +40,3 @@ assertType('DataDiff\\DiffStorageStore<array<string, mixed>, array<string, mixed
 
 $store = $ds->storeB();
 assertType('DataDiff\\DiffStorageStore<array<string, mixed>, array<string, mixed>, array<string, mixed>>', $store);
-
