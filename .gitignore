@@ -9,5 +9,6 @@
 !/README.md
 !/composer.json
 !/extension.neon
+!/discourage-legacy-usage-extension.neon
 !/phpstan.neon
 !/tests.xml

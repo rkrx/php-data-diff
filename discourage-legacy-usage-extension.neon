@@ -1,0 +1,5 @@
+services:
+	-
+	    class: DataDiff\PhpStan\PHPStanDiscouragedNewClassUsageRule
+	    tags:
+	        - phpstan.rules.rule
