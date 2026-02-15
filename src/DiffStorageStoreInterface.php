@@ -13,7 +13,7 @@ use Traversable;
  * @template TLocal of array<string, mixed>
  * @template TForeign of array<string, mixed>
  *
- * @extends IteratorAggregate<TKeySpec&TValueSpec>
+ * @extends IteratorAggregate<TLocal>
  */
 interface DiffStorageStoreInterface extends Countable, IteratorAggregate {
 	/**
@@ -95,7 +95,7 @@ interface DiffStorageStoreInterface extends Countable, IteratorAggregate {
 	public function clearAll();
 
 	/**
-	 * @return Traversable<TKeySpec&TValueSpec>
+	 * @return Traversable<TLocal>
 	 */
 	public function getIterator(): Traversable;
 

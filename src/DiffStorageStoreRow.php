@@ -35,7 +35,6 @@ class DiffStorageStoreRow implements DiffStorageStoreRowInterface {
 	 */
 	public function __construct(?array $localData, ?array $foreignData, array $keys, array $valueKeys, array $converter, callable $stringFormatter) {
 		if($localData !== null) {
-			// @phpstan-ignore-next-line
 			$this->data = $localData;
 		} elseif($foreignData !== null) {
 			$this->data = $foreignData;

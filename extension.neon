@@ -1,3 +1,6 @@
+includes:
+	- vendor/rkr/phpstan-extensions/extension.neon
+
 services:
 	-
 	    class: DataDiff\PhpStan\MemoryDiffStorageBuilderTypeExtension
