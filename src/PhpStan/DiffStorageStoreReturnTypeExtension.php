@@ -34,9 +34,7 @@ class DiffStorageStoreReturnTypeExtension implements DynamicMethodReturnTypeExte
 			return null;
 		}
 
-		$keySpec = $templateTypes[0];
-		$valueSpec = $templateTypes[1];
-		$extraSpec = $templateTypes[2];
+		[$keySpec, $valueSpec, $extraSpec] = $templateTypes;
 
 		$valueFullSpec = $this->mergeArrayTypes($valueSpec, $extraSpec);
 		$fullSpec = $this->mergeArrayTypes($keySpec, $valueFullSpec);
