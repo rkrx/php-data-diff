@@ -1,5 +1,5 @@
 includes:
-	- vendor/rkr/phpstan-extensions/extension.neon
+	- %currentWorkingDirectory%/vendor/rkr/phpstan-extensions/extension.neon
 
 services:
 	-
