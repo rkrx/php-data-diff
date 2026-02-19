@@ -4,6 +4,7 @@ namespace DataDiff\Builders;
 
 use DataDiff\DiffStorageFieldTypeConstants;
 use DataDiff\MemoryDiffStorage;
+use rkrAddKey;
 
 /**
  * @template TKeySpec of array<string, mixed>
@@ -31,7 +32,7 @@ class MemoryDiffStorageBuilder {
 	/**
 	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<\rkr\addKey<TKeySpec, TRowKeyName, TBoolField>, TValueSpec, TExtraSpec>
+	 * @return self<rkrAddKey<TKeySpec, TRowKeyName, TBoolField>, TValueSpec, TExtraSpec>
 	 */
 	public function addBoolKey(string $rowKeyName): self {
 		$this->keyFields[$rowKeyName] = DiffStorageFieldTypeConstants::BOOL;
@@ -42,7 +43,7 @@ class MemoryDiffStorageBuilder {
 	/**
 	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<\rkr\addKey<TKeySpec, TRowKeyName, TIntField>, TValueSpec, TExtraSpec>
+	 * @return self<rkrAddKey<TKeySpec, TRowKeyName, TIntField>, TValueSpec, TExtraSpec>
 	 */
 	public function addIntKey(string $rowKeyName): self {
 		$this->keyFields[$rowKeyName] = DiffStorageFieldTypeConstants::INT;
@@ -53,7 +54,7 @@ class MemoryDiffStorageBuilder {
 	/**
 	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<\rkr\addKey<TKeySpec, TRowKeyName, TFloatField>, TValueSpec, TExtraSpec>
+	 * @return self<rkrAddKey<TKeySpec, TRowKeyName, TFloatField>, TValueSpec, TExtraSpec>
 	 */
 	public function addFloatKey(string $rowKeyName): self {
 		$this->keyFields[$rowKeyName] = DiffStorageFieldTypeConstants::FLOAT;
@@ -64,7 +65,7 @@ class MemoryDiffStorageBuilder {
 	/**
 	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<\rkr\addKey<TKeySpec, TRowKeyName, TStringField>, TValueSpec, TExtraSpec>
+	 * @return self<rkrAddKey<TKeySpec, TRowKeyName, TStringField>, TValueSpec, TExtraSpec>
 	 */
 	public function addStringKey(string $rowKeyName): self {
 		$this->keyFields[$rowKeyName] = DiffStorageFieldTypeConstants::STR;
@@ -75,7 +76,7 @@ class MemoryDiffStorageBuilder {
 	/**
 	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<\rkr\addKey<TKeySpec, TRowKeyName, TMoneyField>, TValueSpec, TExtraSpec>
+	 * @return self<rkrAddKey<TKeySpec, TRowKeyName, TMoneyField>, TValueSpec, TExtraSpec>
 	 */
 	public function addMoneyKey(string $rowKeyName): self {
 		$this->keyFields[$rowKeyName] = DiffStorageFieldTypeConstants::MONEY;
@@ -86,7 +87,7 @@ class MemoryDiffStorageBuilder {
 	/**
 	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<\rkr\addKey<TKeySpec, TRowKeyName, TMd5Field>, TValueSpec, TExtraSpec>
+	 * @return self<rkrAddKey<TKeySpec, TRowKeyName, TMd5Field>, TValueSpec, TExtraSpec>
 	 */
 	public function addMd5Key(string $rowKeyName): self {
 		$this->keyFields[$rowKeyName] = DiffStorageFieldTypeConstants::MD5;
@@ -97,7 +98,7 @@ class MemoryDiffStorageBuilder {
 	/**
 	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, \rkr\addKey<TValueSpec, TRowKeyName, TBoolField>, TExtraSpec>
+	 * @return self<TKeySpec, rkrAddKey<TValueSpec, TRowKeyName, TBoolField>, TExtraSpec>
 	 */
 	public function addBoolValue(string $rowKeyName): self {
 		$this->valueFields[$rowKeyName] = DiffStorageFieldTypeConstants::BOOL;
@@ -108,7 +109,7 @@ class MemoryDiffStorageBuilder {
 	/**
 	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, \rkr\addKey<TValueSpec, TRowKeyName, TIntField>, TExtraSpec>
+	 * @return self<TKeySpec, rkrAddKey<TValueSpec, TRowKeyName, TIntField>, TExtraSpec>
 	 */
 	public function addIntValue(string $rowKeyName): self {
 		$this->valueFields[$rowKeyName] = DiffStorageFieldTypeConstants::INT;
@@ -119,7 +120,7 @@ class MemoryDiffStorageBuilder {
 	/**
 	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, \rkr\addKey<TValueSpec, TRowKeyName, TFloatField>, TExtraSpec>
+	 * @return self<TKeySpec, rkrAddKey<TValueSpec, TRowKeyName, TFloatField>, TExtraSpec>
 	 */
 	public function addFloatValue(string $rowKeyName): self {
 		$this->valueFields[$rowKeyName] = DiffStorageFieldTypeConstants::FLOAT;
@@ -130,7 +131,7 @@ class MemoryDiffStorageBuilder {
 	/**
 	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, \rkr\addKey<TValueSpec, TRowKeyName, TStringField>, TExtraSpec>
+	 * @return self<TKeySpec, rkrAddKey<TValueSpec, TRowKeyName, TStringField>, TExtraSpec>
 	 */
 	public function addStringValue(string $rowKeyName): self {
 		$this->valueFields[$rowKeyName] = DiffStorageFieldTypeConstants::STR;
@@ -141,7 +142,7 @@ class MemoryDiffStorageBuilder {
 	/**
 	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, \rkr\addKey<TValueSpec, TRowKeyName, TMoneyField>, TExtraSpec>
+	 * @return self<TKeySpec, rkrAddKey<TValueSpec, TRowKeyName, TMoneyField>, TExtraSpec>
 	 */
 	public function addMoneyValue(string $rowKeyName): self {
 		$this->valueFields[$rowKeyName] = DiffStorageFieldTypeConstants::MONEY;
@@ -152,7 +153,7 @@ class MemoryDiffStorageBuilder {
 	/**
 	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, \rkr\addKey<TValueSpec, TRowKeyName, TMd5Field>, TExtraSpec>
+	 * @return self<TKeySpec, rkrAddKey<TValueSpec, TRowKeyName, TMd5Field>, TExtraSpec>
 	 */
 	public function addMd5Value(string $rowKeyName): self {
 		$this->valueFields[$rowKeyName] = DiffStorageFieldTypeConstants::MD5;
@@ -163,7 +164,7 @@ class MemoryDiffStorageBuilder {
 	/**
 	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, \rkr\addKey<TExtraSpec, TRowKeyName, TBoolField>>
+	 * @return self<TKeySpec, TValueSpec, rkrAddKey<TExtraSpec, TRowKeyName, TBoolField>>
 	 */
 	public function addBoolExtra(string $rowKeyName): self {
 		return $this;
@@ -172,7 +173,7 @@ class MemoryDiffStorageBuilder {
 	/**
 	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, \rkr\addKey<TExtraSpec, TRowKeyName, TIntField>>
+	 * @return self<TKeySpec, TValueSpec, rkrAddKey<TExtraSpec, TRowKeyName, TIntField>>
 	 */
 	public function addIntExtra(string $rowKeyName): self {
 		return $this;
@@ -181,7 +182,7 @@ class MemoryDiffStorageBuilder {
 	/**
 	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, \rkr\addKey<TExtraSpec, TRowKeyName, TFloatField>>
+	 * @return self<TKeySpec, TValueSpec, rkrAddKey<TExtraSpec, TRowKeyName, TFloatField>>
 	 */
 	public function addFloatExtra(string $rowKeyName): self {
 		return $this;
@@ -190,7 +191,7 @@ class MemoryDiffStorageBuilder {
 	/**
 	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, \rkr\addKey<TExtraSpec, TRowKeyName, TStringField>>
+	 * @return self<TKeySpec, TValueSpec, rkrAddKey<TExtraSpec, TRowKeyName, TStringField>>
 	 */
 	public function addStringExtra(string $rowKeyName): self {
 		return $this;
@@ -199,7 +200,7 @@ class MemoryDiffStorageBuilder {
 	/**
 	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, \rkr\addKey<TExtraSpec, TRowKeyName, TMoneyField>>
+	 * @return self<TKeySpec, TValueSpec, rkrAddKey<TExtraSpec, TRowKeyName, TMoneyField>>
 	 */
 	public function addMoneyExtra(string $rowKeyName): self {
 		return $this;
@@ -208,7 +209,7 @@ class MemoryDiffStorageBuilder {
 	/**
 	 * @template TRowKeyName of literal-string
 	 * @param TRowKeyName $rowKeyName
-	 * @return self<TKeySpec, TValueSpec, \rkr\addKey<TExtraSpec, TRowKeyName, TMd5Field>>
+	 * @return self<TKeySpec, TValueSpec, rkrAddKey<TExtraSpec, TRowKeyName, TMd5Field>>
 	 */
 	public function addMd5Extra(string $rowKeyName): self {
 		return $this;

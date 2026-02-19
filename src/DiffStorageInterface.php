@@ -2,12 +2,14 @@
 
 namespace DataDiff;
 
+use rkrMerge;
+
 /**
  * @template TKeySpec of array<string, mixed>
  * @template TValueSpec of array<string, mixed>
  * @template TExtraSpec of array<string, mixed>
  *
- * @phpstan-type TFullValueSpec \rkr\merge<TValueSpec, TExtraSpec>
+ * @phpstan-type TFullValueSpec rkrMerge<TValueSpec, TExtraSpec>
  */
 interface DiffStorageInterface {
 	/**
@@ -16,12 +18,12 @@ interface DiffStorageInterface {
 	public function getKeys(): array;
 
 	/**
-	 * @return DiffStorageStore<TKeySpec, TFullValueSpec, \rkr\merge<TKeySpec, TFullValueSpec>>
+	 * @return DiffStorageStore<TKeySpec, TFullValueSpec, rkrMerge<TKeySpec, TFullValueSpec>>
 	 */
 	public function storeA(): DiffStorageStore;
 
 	/**
-	 * @return DiffStorageStore<TKeySpec, TFullValueSpec, \rkr\merge<TKeySpec, TFullValueSpec>>
+	 * @return DiffStorageStore<TKeySpec, TFullValueSpec, rkrMerge<TKeySpec, TFullValueSpec>>
 	 */
 	public function storeB(): DiffStorageStore;
 }

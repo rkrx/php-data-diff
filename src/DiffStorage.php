@@ -10,6 +10,7 @@ use Exception;
 use PDO;
 use PDOException;
 use PDOStatement;
+use rkrMerge;
 use RuntimeException;
 
 /**
@@ -17,17 +18,17 @@ use RuntimeException;
  * @template TValueSpec of array<string, mixed>
  * @template TExtraSpec of array<string, mixed>
  *
- * @phpstan-type TValueFullSpec \rkr\merge<TValueSpec, TExtraSpec>
- * @phpstan-type TFullSpec \rkr\merge<TKeySpec, TValueFullSpec>
+ * @phpstan-type TValueFullSpec rkrMerge<TValueSpec, TExtraSpec>
+ * @phpstan-type TFullSpec rkrMerge<TKeySpec, TValueFullSpec>
  * @phpstan-type TKeysOfKeySpec key-of<TKeySpec>
  *
  * @implements DiffStorageInterface<TKeySpec, TValueSpec, TExtraSpec>
  */
 abstract class DiffStorage implements DiffStorageInterface, DiffStorageFieldTypeConstants {
 	private PDO|Pdo\Sqlite $pdo;
-	/** @var DiffStorageStore<TKeySpec, TValueFullSpec, \rkr\merge<TKeySpec, TValueFullSpec>> */
+	/** @var DiffStorageStore<TKeySpec, TValueFullSpec, rkrMerge<TKeySpec, TValueFullSpec>> */
 	private DiffStorageStore $storeA;
-	/** @var DiffStorageStore<TKeySpec, TValueFullSpec, \rkr\merge<TKeySpec, TValueFullSpec>> */
+	/** @var DiffStorageStore<TKeySpec, TValueFullSpec, rkrMerge<TKeySpec, TValueFullSpec>> */
 	private DiffStorageStore $storeB;
 	/** @var TKeysOfKeySpec[] */
 	private array $keys;

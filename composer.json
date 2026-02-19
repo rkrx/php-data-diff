@@ -14,8 +14,9 @@
 		"rkr/phpstan-extensions": "^1.0.0"
 	},
 	"require-dev": {
-		"phpunit/phpunit": "^10.0",
-		"phpstan/phpstan": ">= 0.1"
+		"phpstan/extension-installer": "^1.4",
+		"phpstan/phpstan": ">= 0.1",
+		"phpunit/phpunit": "^10.0"
 	},
 	"suggest": {
 		"rkr/data-diff-helpers": "Some Helpers for rkr/data-diff"
@@ -33,5 +34,17 @@
 	"scripts": {
 		"phpstan": "phpstan analyse -c phpstan.neon",
 		"test": "phpunit -c tests.xml"
+	},
+	"config": {
+		"allow-plugins": {
+			"phpstan/extension-installer": true
+		}
+	},
+	"extra": {
+		"phpstan": {
+			"includes": [
+				"extension.neon"
+			]
+		}
 	}
 }
